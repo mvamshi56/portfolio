@@ -209,7 +209,10 @@
 /* ===== HIGHLIGHT ===== */
 .highlight {
     background: var(--accent-gradient);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    color: #6366f1; /* fallback */
 }
 
 /* ===== ENHANCED THEME TOGGLE ===== */
