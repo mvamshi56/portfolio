@@ -145,7 +145,10 @@
 
         init();
         animate();
-        window.addEventListener('resize', init);
+        window.addEventListener('resize', () => {
+            init();
+            if (!animationId) animate();
+        });
 
         // Pause when not visible
         const observer = new IntersectionObserver((entries) => {
@@ -183,6 +186,10 @@
         if (isTouchDevice) return;
         const cards = document.querySelectorAll('.tilt-card');
         cards.forEach(card => {
+            // Avoid attaching listeners more than once when re-init runs
+            if (card.dataset.tiltInit === '1') return;
+            card.dataset.tiltInit = '1';
+
             card.addEventListener('mousemove', (e) => {
                 const rect = card.getBoundingClientRect();
                 const x = e.clientX - rect.left;
@@ -192,7 +199,6 @@
                 const rotateX = (y - centerY) / 20;
                 const rotateY = (centerX - x) / 20;
                 card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
-                // Update spotlight position
                 card.style.setProperty('--mouse-x', `${x}px`);
                 card.style.setProperty('--mouse-y', `${y}px`);
             });
@@ -201,6 +207,8 @@
             });
         });
     };
+    // Expose so enhancements.js can re-apply after injecting new .tilt-card elements
+    window.__reinitTilt = initTiltCards;
 
     // ===== SCROLL REVEAL ANIMATIONS =====
     const initScrollReveal = () => {
@@ -210,7 +218,7 @@
                     const delay = entry.target.dataset.delay || 0;
                     setTimeout(() => {
                         entry.target.classList.add('animated');
-                    }, parseInt(delay));
+                    }, parseInt(delay, 10));
                     observer.unobserve(entry.target);
                 }
             });
@@ -228,27 +236,36 @@
 
     const setTheme = (theme) => {
         document.documentElement.setAttribute('data-theme', theme);
-        localStorage.setItem('theme', theme);
-        const icon = themeToggle.querySelector('i');
-        icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        try { localStorage.setItem('theme', theme); } catch (e) { /* localStorage may be unavailable */ }
+        if (themeToggle) {
+            const icon = themeToggle.querySelector('i');
+            if (icon) icon.className = theme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+        }
     };
 
-    setTheme(getPreferredTheme());
-    themeToggle.addEventListener('click', () => {
-        const current = document.documentElement.getAttribute('data-theme');
-        setTheme(current === 'dark' ? 'light' : 'dark');
-    });
+    if (themeToggle) {
+        setTheme(getPreferredTheme());
+        themeToggle.addEventListener('click', () => {
+            const current = document.documentElement.getAttribute('data-theme');
+            setTheme(current === 'dark' ? 'light' : 'dark');
+        });
+    } else {
+        // Still apply the preferred theme even if the toggle button is absent
+        setTheme(getPreferredTheme());
+    }
 
     // ===== MOBILE NAV =====
-    navToggle.addEventListener('click', () => {
-        navToggle.classList.toggle('active');
-        navMenu.classList.toggle('active');
-    });
+    if (navToggle && navMenu) {
+        navToggle.addEventListener('click', () => {
+            navToggle.classList.toggle('active');
+            navMenu.classList.toggle('active');
+        });
+    }
 
     document.querySelectorAll('.nav-link').forEach(link => {
         link.addEventListener('click', () => {
-            navToggle.classList.remove('active');
-            navMenu.classList.remove('active');
+            if (navToggle) navToggle.classList.remove('active');
+            if (navMenu) navMenu.classList.remove('active');
         });
     });
 
@@ -257,6 +274,7 @@
     const navLinks = document.querySelectorAll('.nav-link');
 
     const updateActiveNav = () => {
+        if (!navLinks.length) return;
         const navHeight = navbar ? navbar.offsetHeight : 72;
         const scrollPos = window.scrollY + navHeight + 100;
         let currentSection = 'home';
@@ -279,6 +297,7 @@
 
     // ===== NAVBAR SCROLL =====
     const handleNavbarScroll = () => {
+        if (!navbar) return;
         if (window.scrollY > 50) navbar.classList.add('scrolled');
         else navbar.classList.remove('scrolled');
     };
@@ -294,6 +313,7 @@
     let typeIndex = 0, charIndex = 0, isDeleting = false, typeSpeed = 100;
 
     const typeWriter = () => {
+        if (!typewriter) return;
         const currentText = typewriterTexts[typeIndex];
         if (isDeleting) {
             typewriter.textContent = currentText.substring(0, charIndex - 1);
@@ -318,7 +338,7 @@
         if (!scrollProgress) return;
         const scrollTop = window.scrollY;
         const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        scrollProgress.style.width = (scrollTop / docHeight) * 100 + '%';
+        scrollProgress.style.width = docHeight > 0 ? (scrollTop / docHeight) * 100 + '%' : '0%';
     };
 
     // ===== COUNTERS =====
@@ -333,7 +353,8 @@
             counters.forEach((counter, index) => {
                 const card = counter.closest('.stat-card');
                 if (!card) return;
-                const target = parseInt(card.dataset.count);
+                const target = parseInt(card.dataset.count, 10);
+                if (isNaN(target)) return;
                 const duration = 2000;
                 setTimeout(() => {
                     const startTime = performance.now();
@@ -393,18 +414,27 @@
         durationEl.textContent = text || 'Just Started';
     };
 
+    // ===== COPYRIGHT YEAR =====
+    const updateCopyrightYear = () => {
+        const el = document.getElementById('copyrightYear');
+        if (el) el.textContent = new Date().getFullYear();
+    };
+
     // ===== BACK TO TOP =====
     const handleBackToTop = () => {
+        if (!backToTop) return;
         if (window.scrollY > 500) backToTop.classList.add('visible');
         else backToTop.classList.remove('visible');
     };
-    backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    if (backToTop) {
+        backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    }
 
     // ===== SMOOTH SCROLL =====
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
             const href = this.getAttribute('href');
-            if (href.startsWith('#')) {
+            if (href && href.startsWith('#') && href.length > 1) {
                 e.preventDefault();
                 const target = document.getElementById(href.substring(1));
                 if (target) {
@@ -412,8 +442,8 @@
                     window.scrollTo({ top: Math.max(0, target.offsetTop - navHeight - 20), behavior: 'smooth' });
                     navLinks.forEach(link => link.classList.remove('active'));
                     this.classList.add('active');
-                    navToggle.classList.remove('active');
-                    navMenu.classList.remove('active');
+                    if (navToggle) navToggle.classList.remove('active');
+                    if (navMenu) navMenu.classList.remove('active');
                 }
             }
         });
@@ -449,8 +479,8 @@
     // ===== KEYBOARD =====
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
-            navToggle.classList.remove('active');
-            navMenu.classList.remove('active');
+            if (navToggle) navToggle.classList.remove('active');
+            if (navMenu) navMenu.classList.remove('active');
         }
     });
 
@@ -479,6 +509,7 @@
         animateSkillBars();
         animateTimeline();
         calculateDuration();
+        updateCopyrightYear();
         handleBackToTop();
         updateScrollProgress();
         initParticles();
@@ -491,7 +522,7 @@
         // Trigger hero animations immediately
         document.querySelectorAll('#home [data-animate]').forEach(el => {
             const delay = el.dataset.delay || 0;
-            setTimeout(() => el.classList.add('animated'), parseInt(delay));
+            setTimeout(() => el.classList.add('animated'), parseInt(delay, 10));
         });
     };
 
