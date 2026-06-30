@@ -17,7 +17,7 @@
   const CONFIG = {
     // If you deploy a serverless proxy (e.g. Vercel /api/chat), set this.
     // For GitHub Pages demo mode set to null → AI will use pre-scripted answers.
-    AI_PROXY_URL: null, // e.g. 'https://your-vercel-app.vercel.app/api/chat'
+    AI_PROXY_URL:'https://portfolio-sandy-ten-43.vercel.app/api/chat', // e.g. 'https://your-vercel-app.vercel.app/api/chat'
 
     PERSONA_SYSTEM_PROMPT: `You are Vamshidhar Reddy M — an AI-Powered Digital Marketing Specialist with 8+ years of experience in SEO, PPC, AI Automation, and Growth Marketing, based in Hyderabad, India. You are answering questions from potential employers and clients visiting your portfolio site.
 
