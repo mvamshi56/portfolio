@@ -1,6 +1,6 @@
 /**
  * VAMSHIDHAR REDDY M — PORTFOLIO ENHANCEMENTS 2026
- * Now with RAG (Retrieval-Augmented Generation) over GitHub README knowledge base
+ * With RAG (Retrieval-Augmented Generation) over GitHub README knowledge base
  */
 
 (function () {
@@ -14,7 +14,6 @@
 
     GITHUB_USERNAME: 'mvamshi56',
 
-    // RAG knowledge base — pulls these READMEs and uses them as context
     PROJECT_REPOS: [
       { name: 'AI SEO Agent', owner: 'mvamshi56', repo: 'seoagent' },
       { name: 'AI Web Summarizer', owner: 'mvamshi56', repo: 'AI-Web-Summarizer' },
@@ -34,7 +33,7 @@ Key facts about you:
 - Email: digitalVamshidhar@gmail.com | LinkedIn: vamshidharreddym | GitHub: mvamshi56
 - Available for: Full-time roles, consulting, AI+marketing projects
 
-Be warm, concise, and confident. If asked about salary, say you're open to discussing based on scope and fit. Keep answers to 2–4 sentences max. Always end with a light invitation to connect. When you have access to specific project context below, use it to give precise technical answers.`,
+Be warm, concise, and confident. If asked about salary, say you're open to discussing based on scope and fit. Keep answers to 2-4 sentences max. Always end with a light invitation to connect. When you have access to specific project context below, use it to give precise technical answers.`,
 
     SCRIPTED_ANSWERS: {
       default: "Great question! I bring 8+ years of digital marketing expertise fused with hands-on AI development — a rare combo that turns strategy into measurable growth. I'd love to walk you through my work. Feel free to email me at digitalVamshidhar@gmail.com or connect on LinkedIn!",
@@ -45,6 +44,10 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
       skills: "My core stack spans SEO, Google Ads, LinkedIn Ads, CRO, GA4, and Looker Studio on the marketing side — plus TypeScript, JavaScript, Node.js, Prompt Engineering, and AI tool development on the tech side. That dual fluency is what lets me build automation workflows most marketers can only dream of."
     }
   };
+
+  // Newline character used everywhere we need real newlines in strings.
+  // Built via String.fromCharCode to survive any copy-paste decoding.
+  const NL = String.fromCharCode(10);
 
   /* ════════════════════════════════════════════════════════
      UTILITIES
@@ -65,7 +68,7 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
      RAG — knowledge base from GitHub READMEs
      ════════════════════════════════════════════════════════ */
   const KNOWLEDGE_CACHE_KEY = 'project_knowledge_v1';
-  const KNOWLEDGE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+  const KNOWLEDGE_CACHE_TTL = 24 * 60 * 60 * 1000;
 
   const STOP_WORDS = new Set([
     'the','a','an','and','or','but','is','are','was','were','be','been','being',
@@ -84,17 +87,16 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
       .filter(t => t.length > 2 && !STOP_WORDS.has(t));
   }
 
-  function chunkText(text, chunkSize = 400, overlap = 100) {
-    // Remove code blocks (they don't retrieve well) and excessive whitespace
+  function chunkText(text, chunkSize, overlap) {
+    chunkSize = chunkSize || 400;
+    overlap = overlap || 100;
+    // Strip markdown noise and collapse all whitespace (including newlines) to single spaces.
     const cleaned = text
       .replace(/```[\s\S]*?```/g, '')
       .replace(/`[^`]*`/g, '')
-      .replace(/!\[[^\]]*\]\([^)]*\)/g, '')  // remove markdown images
-      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // keep link text, drop URL
-      .replace(/[#*_>]+/g, '')               // strip markdown
-      .replace(/
-{2,}/g, '
-')
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, '')
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+      .replace(/[#*_>]+/g, '')
       .replace(/\s{2,}/g, ' ')
       .trim();
 
@@ -111,10 +113,9 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
   }
 
   async function fetchProjectReadme(owner, repo) {
-    // Try main branch first, then master
     for (const branch of ['main', 'master']) {
       try {
-        const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/README.md`);
+        const res = await fetch('https://raw.githubusercontent.com/' + owner + '/' + repo + '/' + branch + '/README.md');
         if (res.ok) return await res.text();
       } catch (e) { /* try next */ }
     }
@@ -122,7 +123,6 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
   }
 
   async function loadProjectKnowledge() {
-    // Cache check
     try {
       const cached = JSON.parse(localStorage.getItem(KNOWLEDGE_CACHE_KEY) || 'null');
       if (cached && (Date.now() - cached.timestamp) < KNOWLEDGE_CACHE_TTL && Array.isArray(cached.data)) {
@@ -130,17 +130,15 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
       }
     } catch (e) { /* ignore */ }
 
-    // Fetch all READMEs in parallel
     const results = await Promise.all(
       CONFIG.PROJECT_REPOS.map(async (proj) => {
         const readme = await fetchProjectReadme(proj.owner, proj.repo);
         if (!readme) return [];
-        return chunkText(readme).map(text => ({ project: proj.name, text }));
+        return chunkText(readme).map(text => ({ project: proj.name, text: text }));
       })
     );
-    const knowledge = results.flat();
+    const knowledge = results.reduce((acc, arr) => acc.concat(arr), []);
 
-    // Cache it
     try {
       localStorage.setItem(KNOWLEDGE_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: knowledge }));
     } catch (e) { /* ignore */ }
@@ -148,7 +146,8 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
     return knowledge;
   }
 
-  function retrieveRelevantChunks(query, knowledge, k = 3) {
+  function retrieveRelevantChunks(query, knowledge, k) {
+    k = k || 3;
     const queryTokens = tokenize(query);
     if (!queryTokens.length || !knowledge.length) return [];
 
@@ -160,7 +159,7 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
         const matches = text.match(wordRe);
         if (matches) score += matches.length;
       });
-      return { project: chunk.project, text: chunk.text, score };
+      return { project: chunk.project, text: chunk.text, score: score };
     });
 
     return scored
@@ -205,7 +204,7 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
       const blobs = mesh.querySelectorAll('.mesh-blob');
       blobs.forEach((b, i) => {
         const factor = (i + 1) * 0.4;
-        b.style.transform = `translate(${x * factor}px, ${y * factor}px)`;
+        b.style.transform = 'translate(' + (x * factor) + 'px, ' + (y * factor) + 'px)';
       });
     }, { passive: true });
   }
@@ -239,23 +238,18 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
     section.className = 'github-stats-section';
     section.id = 'github-stats';
     section.setAttribute('data-animate', 'fade-up');
-    section.innerHTML = `
-      <div class="container">
-        <div class="github-stats-header">
-          <span class="github-stats-tag">
-            <i class="fab fa-github"></i>
-            Live from GitHub
-            <span class="live-dot"></span>
-          </span>
-          <h3 class="github-stats-title">Real-time activity from my repositories</h3>
-        </div>
-        <div class="github-stats-grid" id="ghStatsGrid">
-          <div class="github-stat-card loading"><div class="gh-stat-skeleton"></div></div>
-          <div class="github-stat-card loading"><div class="gh-stat-skeleton"></div></div>
-          <div class="github-stat-card loading"><div class="gh-stat-skeleton"></div></div>
-          <div class="github-stat-card loading"><div class="gh-stat-skeleton"></div></div>
-        </div>
-      </div>`;
+    section.innerHTML = '<div class="container">' +
+      '<div class="github-stats-header">' +
+        '<span class="github-stats-tag"><i class="fab fa-github"></i> Live from GitHub <span class="live-dot"></span></span>' +
+        '<h3 class="github-stats-title">Real-time activity from my repositories</h3>' +
+      '</div>' +
+      '<div class="github-stats-grid" id="ghStatsGrid">' +
+        '<div class="github-stat-card loading"><div class="gh-stat-skeleton"></div></div>' +
+        '<div class="github-stat-card loading"><div class="gh-stat-skeleton"></div></div>' +
+        '<div class="github-stat-card loading"><div class="gh-stat-skeleton"></div></div>' +
+        '<div class="github-stat-card loading"><div class="gh-stat-skeleton"></div></div>' +
+      '</div>' +
+    '</div>';
     impactSection.parentNode.insertBefore(section, impactSection.nextSibling);
 
     fetchAndRender();
@@ -278,8 +272,8 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
 
       try {
         const [userRes, reposRes] = await Promise.all([
-          fetch(`https://api.github.com/users/${USERNAME}`),
-          fetch(`https://api.github.com/users/${USERNAME}/repos?per_page=100&sort=pushed`)
+          fetch('https://api.github.com/users/' + USERNAME),
+          fetch('https://api.github.com/users/' + USERNAME + '/repos?per_page=100&sort=pushed')
         ]);
         if (!userRes.ok || !reposRes.ok) throw new Error('GitHub API HTTP ' + userRes.status);
 
@@ -300,13 +294,13 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
         const data = {
           repos: user.public_repos,
           stars: totalStars,
-          recentlyActive,
-          lastCommitTime,
+          recentlyActive: recentlyActive,
+          lastCommitTime: lastCommitTime,
           lastCommitRepoName: lastCommitRepo ? lastCommitRepo.name : null
         };
 
         try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: data }));
         } catch (e) { /* ignore */ }
 
         renderGitHubStats(data);
@@ -324,58 +318,59 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
       const grid = document.getElementById('ghStatsGrid');
       if (!grid) return;
       const lastCommitHref = stats.lastCommitRepoName
-        ? `https://github.com/${USERNAME}/${stats.lastCommitRepoName}`
-        : `https://github.com/${USERNAME}`;
+        ? 'https://github.com/' + USERNAME + '/' + stats.lastCommitRepoName
+        : 'https://github.com/' + USERNAME;
       const lastCommitSub = stats.lastCommitRepoName
-        ? `<span class="gh-stat-sublabel">→ ${escapeHtml(stats.lastCommitRepoName)}</span>`
+        ? '<span class="gh-stat-sublabel">→ ' + escapeHtml(stats.lastCommitRepoName) + '</span>'
         : '';
-      grid.innerHTML = `
-        <a href="https://github.com/${USERNAME}?tab=repositories" target="_blank" rel="noopener noreferrer" class="github-stat-card">
-          <div class="gh-stat-icon"><i class="fas fa-code-branch"></i></div>
-          <div class="gh-stat-value">${stats.repos}</div>
-          <div class="gh-stat-label">Public Repos</div>
-        </a>
-        <a href="https://github.com/${USERNAME}" target="_blank" rel="noopener noreferrer" class="github-stat-card">
-          <div class="gh-stat-icon"><i class="fas fa-star"></i></div>
-          <div class="gh-stat-value">${stats.stars}</div>
-          <div class="gh-stat-label">Stars Earned</div>
-        </a>
-        <div class="github-stat-card">
-          <div class="gh-stat-icon"><i class="fas fa-fire"></i></div>
-          <div class="gh-stat-value">${stats.recentlyActive}</div>
-          <div class="gh-stat-label">Active in 30 Days</div>
-        </div>
-        <a href="${lastCommitHref}" target="_blank" rel="noopener noreferrer" class="github-stat-card">
-          <div class="gh-stat-icon"><i class="fas fa-clock"></i></div>
-          <div class="gh-stat-value">${relativeTime(stats.lastCommitTime)}</div>
-          <div class="gh-stat-label">Last Commit ${lastCommitSub}</div>
-        </a>`;
+      grid.innerHTML =
+        '<a href="https://github.com/' + USERNAME + '?tab=repositories" target="_blank" rel="noopener noreferrer" class="github-stat-card">' +
+          '<div class="gh-stat-icon"><i class="fas fa-code-branch"></i></div>' +
+          '<div class="gh-stat-value">' + stats.repos + '</div>' +
+          '<div class="gh-stat-label">Public Repos</div>' +
+        '</a>' +
+        '<a href="https://github.com/' + USERNAME + '" target="_blank" rel="noopener noreferrer" class="github-stat-card">' +
+          '<div class="gh-stat-icon"><i class="fas fa-star"></i></div>' +
+          '<div class="gh-stat-value">' + stats.stars + '</div>' +
+          '<div class="gh-stat-label">Stars Earned</div>' +
+        '</a>' +
+        '<div class="github-stat-card">' +
+          '<div class="gh-stat-icon"><i class="fas fa-fire"></i></div>' +
+          '<div class="gh-stat-value">' + stats.recentlyActive + '</div>' +
+          '<div class="gh-stat-label">Active in 30 Days</div>' +
+        '</div>' +
+        '<a href="' + lastCommitHref + '" target="_blank" rel="noopener noreferrer" class="github-stat-card">' +
+          '<div class="gh-stat-icon"><i class="fas fa-clock"></i></div>' +
+          '<div class="gh-stat-value">' + relativeTime(stats.lastCommitTime) + '</div>' +
+          '<div class="gh-stat-label">Last Commit ' + lastCommitSub + '</div>' +
+        '</a>';
     }
 
     function renderGitHubFallback() {
       const grid = document.getElementById('ghStatsGrid');
       if (!grid) return;
-      grid.innerHTML = `
-        <a href="https://github.com/${USERNAME}?tab=repositories" target="_blank" rel="noopener noreferrer" class="github-stat-card">
-          <div class="gh-stat-icon"><i class="fas fa-code-branch"></i></div>
-          <div class="gh-stat-value">View</div>
-          <div class="gh-stat-label">Public Repos</div>
-        </a>
-        <a href="https://github.com/${USERNAME}" target="_blank" rel="noopener noreferrer" class="github-stat-card">
-          <div class="gh-stat-icon"><i class="fas fa-star"></i></div>
-          <div class="gh-stat-value">View</div>
-          <div class="gh-stat-label">Stars on GitHub</div>
-        </a>
-        <a href="https://github.com/${USERNAME}" target="_blank" rel="noopener noreferrer" class="github-stat-card">
-          <div class="gh-stat-icon"><i class="fas fa-fire"></i></div>
-          <div class="gh-stat-value">Active</div>
-          <div class="gh-stat-label">Builder</div>
-        </a>
-        <a href="https://github.com/${USERNAME}" target="_blank" rel="noopener noreferrer" class="github-stat-card">
-          <div class="gh-stat-icon"><i class="fab fa-github"></i></div>
-          <div class="gh-stat-value">→</div>
-          <div class="gh-stat-label">See all on GitHub</div>
-        </a>`;
+      const ghHref = 'https://github.com/' + USERNAME;
+      grid.innerHTML =
+        '<a href="' + ghHref + '?tab=repositories" target="_blank" rel="noopener noreferrer" class="github-stat-card">' +
+          '<div class="gh-stat-icon"><i class="fas fa-code-branch"></i></div>' +
+          '<div class="gh-stat-value">View</div>' +
+          '<div class="gh-stat-label">Public Repos</div>' +
+        '</a>' +
+        '<a href="' + ghHref + '" target="_blank" rel="noopener noreferrer" class="github-stat-card">' +
+          '<div class="gh-stat-icon"><i class="fas fa-star"></i></div>' +
+          '<div class="gh-stat-value">View</div>' +
+          '<div class="gh-stat-label">Stars on GitHub</div>' +
+        '</a>' +
+        '<a href="' + ghHref + '" target="_blank" rel="noopener noreferrer" class="github-stat-card">' +
+          '<div class="gh-stat-icon"><i class="fas fa-fire"></i></div>' +
+          '<div class="gh-stat-value">Active</div>' +
+          '<div class="gh-stat-label">Builder</div>' +
+        '</a>' +
+        '<a href="' + ghHref + '" target="_blank" rel="noopener noreferrer" class="github-stat-card">' +
+          '<div class="gh-stat-icon"><i class="fab fa-github"></i></div>' +
+          '<div class="gh-stat-value">→</div>' +
+          '<div class="gh-stat-label">See all on GitHub</div>' +
+        '</a>';
     }
 
     function relativeTime(timestamp) {
@@ -403,72 +398,66 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
     const section = document.createElement('section');
     section.id = 'roi-calculator';
     section.setAttribute('data-animate', 'fade-up');
-    section.innerHTML = `
-      <div class="container">
-        <div class="section-header">
-          <span class="section-tag">ROI Calculator</span>
-          <h2 class="section-title">What Would Hiring Me <span class="gradient-text">Return?</span></h2>
-          <p class="section-desc">Adjust the sliders to model the potential business impact — based on real results I've delivered.</p>
-        </div>
-        <div class="roi-wrapper">
-          <div class="roi-controls tilt-card" style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:20px;padding:36px;">
-            <div class="roi-input-group">
-              <label>Monthly Website Visits</label>
-              <div class="roi-value-display" id="roiVisitsDisplay">50,000</div>
-              <input type="range" class="roi-slider" id="roiVisits" min="5000" max="500000" step="5000" value="50000">
-            </div>
-            <div class="roi-input-group">
-              <label>Current Lead Conversion Rate (%)</label>
-              <div class="roi-value-display" id="roiConvDisplay">1.5%</div>
-              <input type="range" class="roi-slider" id="roiConv" min="0.5" max="8" step="0.1" value="1.5">
-            </div>
-            <div class="roi-input-group">
-              <label>Average Revenue per Lead (₹)</label>
-              <div class="roi-value-display" id="roiRevenueDisplay">₹25,000</div>
-              <input type="range" class="roi-slider" id="roiRevenue" min="1000" max="200000" step="1000" value="25000">
-            </div>
-            <div class="roi-input-group">
-              <label>Monthly Paid Ads Budget (₹)</label>
-              <div class="roi-value-display" id="roiBudgetDisplay">₹1,00,000</div>
-              <input type="range" class="roi-slider" id="roiBudget" min="10000" max="1000000" step="10000" value="100000">
-            </div>
-          </div>
-          <div class="roi-results">
-            <div class="roi-results-title">Projected Monthly Impact</div>
-            <div class="roi-metric">
-              <div class="roi-metric-label"><i class="fas fa-chart-line"></i> Organic Traffic Lift (15%)</div>
-              <div class="roi-metric-value" id="roiTrafficLift">+7,500</div>
-            </div>
-            <div class="roi-metric">
-              <div class="roi-metric-label"><i class="fas fa-users"></i> Additional Leads / Month</div>
-              <div class="roi-metric-value" id="roiLeadsGain">+113</div>
-            </div>
-            <div class="roi-metric">
-              <div class="roi-metric-label"><i class="fas fa-funnel-dollar"></i> CRO Uplift (12% conversion gain)</div>
-              <div class="roi-metric-value" id="roiCroLift">₹5,04,000</div>
-            </div>
-            <div class="roi-metric">
-              <div class="roi-metric-label"><i class="fas fa-ad"></i> Paid Ads ROAS Improvement (25%)</div>
-              <div class="roi-metric-value" id="roiRoasLift">₹25,000</div>
-            </div>
-            <div class="roi-metric" style="border-top:2px solid var(--accent-primary);margin-top:8px;padding-top:20px;">
-              <div class="roi-metric-label" style="font-weight:700;color:var(--text-primary);"><i class="fas fa-trophy"></i> Total Monthly Revenue Impact</div>
-              <div class="roi-metric-value big" id="roiTotal">₹5,29,000</div>
-            </div>
-            <div class="roi-disclaimer">
-              Projections are based on conservative benchmarks from Vamshidhar's real-world results: 15% organic traffic growth, 12% conversion rate improvement via CRO/A-B testing, and 25% ROAS improvement through paid media optimization.
-            </div>
-            <div class="roi-cta-row">
-              <a href="mailto:digitalVamshidhar@gmail.com" class="btn btn-primary magnetic-btn" style="flex:1;justify-content:center;">
-                <i class="fas fa-envelope"></i> Let's Discuss
-              </a>
-              <a href="https://linkedin.com/in/vamshidharreddym" target="_blank" rel="noopener noreferrer" class="btn btn-secondary magnetic-btn" style="flex:1;justify-content:center;">
-                <i class="fab fa-linkedin"></i> Connect
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>`;
+    section.innerHTML =
+      '<div class="container">' +
+        '<div class="section-header">' +
+          '<span class="section-tag">ROI Calculator</span>' +
+          '<h2 class="section-title">What Would Hiring Me <span class="gradient-text">Return?</span></h2>' +
+          '<p class="section-desc">Adjust the sliders to model the potential business impact — based on real results I have delivered.</p>' +
+        '</div>' +
+        '<div class="roi-wrapper">' +
+          '<div class="roi-controls tilt-card" style="background:var(--bg-card);border:1px solid var(--border-color);border-radius:20px;padding:36px;">' +
+            '<div class="roi-input-group">' +
+              '<label>Monthly Website Visits</label>' +
+              '<div class="roi-value-display" id="roiVisitsDisplay">50,000</div>' +
+              '<input type="range" class="roi-slider" id="roiVisits" min="5000" max="500000" step="5000" value="50000">' +
+            '</div>' +
+            '<div class="roi-input-group">' +
+              '<label>Current Lead Conversion Rate (%)</label>' +
+              '<div class="roi-value-display" id="roiConvDisplay">1.5%</div>' +
+              '<input type="range" class="roi-slider" id="roiConv" min="0.5" max="8" step="0.1" value="1.5">' +
+            '</div>' +
+            '<div class="roi-input-group">' +
+              '<label>Average Revenue per Lead (₹)</label>' +
+              '<div class="roi-value-display" id="roiRevenueDisplay">₹25,000</div>' +
+              '<input type="range" class="roi-slider" id="roiRevenue" min="1000" max="200000" step="1000" value="25000">' +
+            '</div>' +
+            '<div class="roi-input-group">' +
+              '<label>Monthly Paid Ads Budget (₹)</label>' +
+              '<div class="roi-value-display" id="roiBudgetDisplay">₹1,00,000</div>' +
+              '<input type="range" class="roi-slider" id="roiBudget" min="10000" max="1000000" step="10000" value="100000">' +
+            '</div>' +
+          '</div>' +
+          '<div class="roi-results">' +
+            '<div class="roi-results-title">Projected Monthly Impact</div>' +
+            '<div class="roi-metric">' +
+              '<div class="roi-metric-label"><i class="fas fa-chart-line"></i> Organic Traffic Lift (15%)</div>' +
+              '<div class="roi-metric-value" id="roiTrafficLift">+7,500</div>' +
+            '</div>' +
+            '<div class="roi-metric">' +
+              '<div class="roi-metric-label"><i class="fas fa-users"></i> Additional Leads / Month</div>' +
+              '<div class="roi-metric-value" id="roiLeadsGain">+113</div>' +
+            '</div>' +
+            '<div class="roi-metric">' +
+              '<div class="roi-metric-label"><i class="fas fa-funnel-dollar"></i> CRO Uplift (12% conversion gain)</div>' +
+              '<div class="roi-metric-value" id="roiCroLift">₹5,04,000</div>' +
+            '</div>' +
+            '<div class="roi-metric">' +
+              '<div class="roi-metric-label"><i class="fas fa-ad"></i> Paid Ads ROAS Improvement (25%)</div>' +
+              '<div class="roi-metric-value" id="roiRoasLift">₹25,000</div>' +
+            '</div>' +
+            '<div class="roi-metric" style="border-top:2px solid var(--accent-primary);margin-top:8px;padding-top:20px;">' +
+              '<div class="roi-metric-label" style="font-weight:700;color:var(--text-primary);"><i class="fas fa-trophy"></i> Total Monthly Revenue Impact</div>' +
+              '<div class="roi-metric-value big" id="roiTotal">₹5,29,000</div>' +
+            '</div>' +
+            '<div class="roi-disclaimer">Projections are based on conservative benchmarks from Vamshidhar\'s real-world results: 15% organic traffic growth, 12% conversion rate improvement via CRO/A-B testing, and 25% ROAS improvement through paid media optimization.</div>' +
+            '<div class="roi-cta-row">' +
+              '<a href="mailto:digitalVamshidhar@gmail.com" class="btn btn-primary magnetic-btn" style="flex:1;justify-content:center;"><i class="fas fa-envelope"></i> Let\'s Discuss</a>' +
+              '<a href="https://linkedin.com/in/vamshidharreddym" target="_blank" rel="noopener noreferrer" class="btn btn-secondary magnetic-btn" style="flex:1;justify-content:center;"><i class="fab fa-linkedin"></i> Connect</a>' +
+            '</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>';
 
     skillsSection.parentNode.insertBefore(section, skillsSection);
 
@@ -505,7 +494,7 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
 
       [roiVisits, roiConv, roiRevenue, roiBudget].forEach(sl => {
         const pct = ((sl.value - sl.min) / (sl.max - sl.min)) * 100;
-        sl.style.background = `linear-gradient(to right, #6366f1 ${pct}%, var(--bg-tertiary) ${pct}%)`;
+        sl.style.background = 'linear-gradient(to right, #6366f1 ' + pct + '%, var(--bg-tertiary) ' + pct + '%)';
       });
     }
 
@@ -521,40 +510,37 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
   function injectAIChat() {
     const beacon = document.createElement('div');
     beacon.className = 'ai-chat-beacon';
-    beacon.innerHTML = `
-      <div class="ai-chat-tooltip">Ask me anything — I'll answer as Vamshidhar!</div>
-      <button class="ai-chat-trigger" id="aiChatTrigger" aria-label="Open AI chat">
-        <i class="fas fa-robot"></i>
-        <span class="chat-badge"></span>
-      </button>`;
+    beacon.innerHTML =
+      '<div class="ai-chat-tooltip">Ask me anything — I will answer as Vamshidhar!</div>' +
+      '<button class="ai-chat-trigger" id="aiChatTrigger" aria-label="Open AI chat"><i class="fas fa-robot"></i><span class="chat-badge"></span></button>';
     document.body.appendChild(beacon);
 
     const panel = document.createElement('div');
     panel.className = 'ai-chat-panel';
     panel.id = 'aiChatPanel';
     panel.setAttribute('role', 'dialog');
-    panel.setAttribute('aria-label', "Chat with Vamshidhar's AI assistant");
-    panel.innerHTML = `
-      <div class="chat-panel-header">
-        <div class="chat-avatar">VR</div>
-        <div class="chat-header-info">
-          <p class="chat-header-name">Vamshidhar Reddy M</p>
-          <span class="chat-header-status">AI-Powered · RAG · Online</span>
-        </div>
-        <button class="chat-close" id="aiChatClose" aria-label="Close chat"><i class="fas fa-times"></i></button>
-      </div>
-      <div class="chat-messages" id="chatMessages"></div>
-      <div class="chat-quick-replies" id="chatQuickReplies">
-        <button class="chat-quick-reply" data-q="How does the AI SEO Agent work?">SEO Agent</button>
-        <button class="chat-quick-reply" data-q="Tell me about the Web Summarizer">Web Summarizer</button>
-        <button class="chat-quick-reply" data-q="What's the Security Platform built with?">Security Platform</button>
-        <button class="chat-quick-reply" data-q="Why should I hire you?">Why Hire You?</button>
-      </div>
-      <div class="chat-input-row">
-        <input type="text" class="chat-input" id="chatInput" placeholder="Ask about my projects, experience…" maxlength="300" autocomplete="off">
-        <button class="chat-send" id="chatSend" aria-label="Send message"><i class="fas fa-paper-plane"></i></button>
-      </div>
-      <div class="chat-powered-by">AI + RAG over my project READMEs · Always verify important info directly</div>`;
+    panel.setAttribute('aria-label', 'Chat with Vamshidhar AI assistant');
+    panel.innerHTML =
+      '<div class="chat-panel-header">' +
+        '<div class="chat-avatar">VR</div>' +
+        '<div class="chat-header-info">' +
+          '<p class="chat-header-name">Vamshidhar Reddy M</p>' +
+          '<span class="chat-header-status">AI-Powered · RAG · Online</span>' +
+        '</div>' +
+        '<button class="chat-close" id="aiChatClose" aria-label="Close chat"><i class="fas fa-times"></i></button>' +
+      '</div>' +
+      '<div class="chat-messages" id="chatMessages"></div>' +
+      '<div class="chat-quick-replies" id="chatQuickReplies">' +
+        '<button class="chat-quick-reply" data-q="How does the AI SEO Agent work?">SEO Agent</button>' +
+        '<button class="chat-quick-reply" data-q="Tell me about the Web Summarizer">Web Summarizer</button>' +
+        '<button class="chat-quick-reply" data-q="What is the Security Platform built with?">Security Platform</button>' +
+        '<button class="chat-quick-reply" data-q="Why should I hire you?">Why Hire You?</button>' +
+      '</div>' +
+      '<div class="chat-input-row">' +
+        '<input type="text" class="chat-input" id="chatInput" placeholder="Ask about my projects, experience..." maxlength="300" autocomplete="off">' +
+        '<button class="chat-send" id="chatSend" aria-label="Send message"><i class="fas fa-paper-plane"></i></button>' +
+      '</div>' +
+      '<div class="chat-powered-by">AI + RAG over my project READMEs · Always verify important info directly</div>';
     document.body.appendChild(panel);
 
     const trigger    = document.getElementById('aiChatTrigger');
@@ -582,7 +568,6 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
         if (messagesEl.children.length === 0) {
           addBotMessage("Hi! I'm Vamshidhar's AI assistant — I have access to my actual project READMEs, so ask me anything specific about my AI tools or experience 👋");
         }
-        // Prefetch knowledge in background so first question is fast
         if (!window.__knowledgeLoaded) {
           window.__knowledgeLoaded = true;
           loadProjectKnowledge().catch(() => { window.__knowledgeLoaded = false; });
@@ -624,7 +609,6 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
       bubble.textContent = text;
       content.appendChild(bubble);
 
-      // Source citations (if RAG was used)
       if (sources && sources.length) {
         const srcRow = document.createElement('div');
         srcRow.className = 'chat-msg-sources';
@@ -666,13 +650,12 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
       const div = document.createElement('div');
       div.className = 'chat-msg bot';
       div.id = 'chatTyping';
-      const inner = `
-        <div class="chat-msg-avatar">VR</div>
-        <div class="chat-typing-wrap">
-          <div class="chat-typing"><span></span><span></span><span></span></div>
-          ${label ? `<div class="chat-typing-label">${escapeHtml(label)}</div>` : ''}
-        </div>`;
-      div.innerHTML = inner;
+      div.innerHTML =
+        '<div class="chat-msg-avatar">VR</div>' +
+        '<div class="chat-typing-wrap">' +
+          '<div class="chat-typing"><span></span><span></span><span></span></div>' +
+          (label ? '<div class="chat-typing-label">' + escapeHtml(label) + '</div>' : '') +
+        '</div>';
       messagesEl.appendChild(div);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
@@ -692,8 +675,7 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
 
       await sleep(200);
 
-      // Step 1: Retrieve relevant context from project READMEs
-      showTyping('Searching my project READMEs…');
+      showTyping('Searching my project READMEs...');
       let relevantChunks = [];
       try {
         const knowledge = await loadProjectKnowledge();
@@ -704,14 +686,17 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
 
       removeTyping();
       await sleep(150);
-      showTyping(relevantChunks.length ? 'Composing answer with context…' : 'Thinking…');
+      showTyping(relevantChunks.length ? 'Composing answer with context...' : 'Thinking...');
 
-      // Step 2: Build enriched system prompt with retrieved context
       let reply;
       let sourcesUsed = [];
       try {
         if (relevantChunks.length) {
-          sourcesUsed = [...new Set(relevantChunks.map(c => c.project))];
+          const seen = {};
+          sourcesUsed = [];
+          relevantChunks.forEach(c => {
+            if (!seen[c.project]) { seen[c.project] = true; sourcesUsed.push(c.project); }
+          });
         }
         if (CONFIG.AI_PROXY_URL) {
           reply = await fetchAIReply(history, relevantChunks);
@@ -735,18 +720,11 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
     async function fetchAIReply(msgs, relevantChunks) {
       let systemPrompt = CONFIG.PERSONA_SYSTEM_PROMPT;
       if (relevantChunks && relevantChunks.length) {
+        const sep = NL + NL + '---' + NL + NL;
         const contextBlock = relevantChunks
-          .map(c => `[From ${c.project} README]:
-${c.text}`)
-          .join('
-
----
-
-');
-        systemPrompt += `
-
-RELEVANT PROJECT CONTEXT (use this when answering, speak naturally in first person):
-${contextBlock}`;
+          .map(c => '[From ' + c.project + ' README]:' + NL + c.text)
+          .join(sep);
+        systemPrompt = systemPrompt + NL + NL + 'RELEVANT PROJECT CONTEXT (use this when answering, speak naturally in first person):' + NL + contextBlock;
       }
 
       const ctrl = new AbortController();
@@ -857,11 +835,11 @@ ${contextBlock}`;
     const overlay = document.createElement('div');
     overlay.className = 'case-study-overlay';
     overlay.id = 'caseStudyOverlay';
-    overlay.innerHTML = `
-      <div class="case-study-modal" role="dialog" aria-modal="true" aria-labelledby="csTitle">
-        <button class="case-study-close" id="caseStudyClose" aria-label="Close case study"><i class="fas fa-times"></i></button>
-        <div class="case-study-content" id="caseStudyContent"></div>
-      </div>`;
+    overlay.innerHTML =
+      '<div class="case-study-modal" role="dialog" aria-modal="true" aria-labelledby="csTitle">' +
+        '<button class="case-study-close" id="caseStudyClose" aria-label="Close case study"><i class="fas fa-times"></i></button>' +
+        '<div class="case-study-content" id="caseStudyContent"></div>' +
+      '</div>';
     document.body.appendChild(overlay);
 
     function closeModal() {
@@ -901,29 +879,27 @@ ${contextBlock}`;
 
     function openCaseStudy(title, study) {
       const content = document.getElementById('caseStudyContent');
-      content.innerHTML = `
-        <div class="cs-header">
-          <div class="cs-icon"><i class="fas ${escapeHtml(study.icon)}"></i></div>
-          <h2 class="cs-title" id="csTitle">${escapeHtml(title)}</h2>
-        </div>
-        <div class="cs-tech-row">
-          ${study.tech.map(t => '<span class="cs-tech-tag">' + escapeHtml(t) + '</span>').join('')}
-        </div>
-        <div class="cs-section">
-          <div class="cs-section-label"><i class="fas fa-exclamation-circle"></i> The problem</div>
-          <p class="cs-section-text">${escapeHtml(study.problem)}</p>
-        </div>
-        <div class="cs-section">
-          <div class="cs-section-label"><i class="fas fa-cogs"></i> The approach</div>
-          <p class="cs-section-text">${escapeHtml(study.approach)}</p>
-        </div>
-        <div class="cs-section">
-          <div class="cs-section-label"><i class="fas fa-trophy"></i> The result</div>
-          <p class="cs-section-text">${escapeHtml(study.result)}</p>
-        </div>
-        <a href="${escapeHtml(study.link)}" target="_blank" rel="noopener noreferrer" class="cs-github-link">
-          <i class="fab fa-github"></i> View source on GitHub
-        </a>`;
+      content.innerHTML =
+        '<div class="cs-header">' +
+          '<div class="cs-icon"><i class="fas ' + escapeHtml(study.icon) + '"></i></div>' +
+          '<h2 class="cs-title" id="csTitle">' + escapeHtml(title) + '</h2>' +
+        '</div>' +
+        '<div class="cs-tech-row">' +
+          study.tech.map(t => '<span class="cs-tech-tag">' + escapeHtml(t) + '</span>').join('') +
+        '</div>' +
+        '<div class="cs-section">' +
+          '<div class="cs-section-label"><i class="fas fa-exclamation-circle"></i> The problem</div>' +
+          '<p class="cs-section-text">' + escapeHtml(study.problem) + '</p>' +
+        '</div>' +
+        '<div class="cs-section">' +
+          '<div class="cs-section-label"><i class="fas fa-cogs"></i> The approach</div>' +
+          '<p class="cs-section-text">' + escapeHtml(study.approach) + '</p>' +
+        '</div>' +
+        '<div class="cs-section">' +
+          '<div class="cs-section-label"><i class="fas fa-trophy"></i> The result</div>' +
+          '<p class="cs-section-text">' + escapeHtml(study.result) + '</p>' +
+        '</div>' +
+        '<a href="' + escapeHtml(study.link) + '" target="_blank" rel="noopener noreferrer" class="cs-github-link"><i class="fab fa-github"></i> View source on GitHub</a>';
       overlay.classList.add('open');
       document.body.style.overflow = 'hidden';
     }
