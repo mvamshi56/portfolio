@@ -1036,3 +1036,52 @@ a.github-stat-card:hover::before {
   .github-stat-card { padding: 16px 12px; }
   .gh-stat-value { font-size: 1.3rem; }
 }
+/* ───────────────────────────────────────────
+   11. RAG SOURCE CITATIONS (under bot messages)
+   ─────────────────────────────────────────── */
+.chat-msg-sources {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding-left: 2px;
+  font-size: 0.7rem;
+}
+
+.chat-msg-sources-label {
+  color: var(--text-muted);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.chat-msg-sources-label::before {
+  content: '·';
+  font-size: 0.8rem;
+}
+
+.chat-msg-source-tag {
+  background: var(--accent-gradient-soft);
+  color: var(--accent-primary);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  white-space: nowrap;
+}
+
+/* Typing indicator with label */
+.chat-typing-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.chat-typing-label {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding-left: 6px;
+}
