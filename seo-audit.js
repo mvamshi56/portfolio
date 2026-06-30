@@ -1,19 +1,13 @@
 /**
  * VAMSHIDHAR REDDY M — MINI SEO AUDIT TOOL
- * Client-side mini version of the AI SEO Agent.
- * Real SEO checks on any URL via CORS proxy + DOMParser. No backend.
+ * Powered by Google PageSpeed Insights (Lighthouse engine).
+ * Real, authoritative SEO data — same audits Google uses to rank pages.
  */
 
 (function () {
   'use strict';
 
-  // Reordered: allorigins is most reliable, codetabs is solid backup,
-  // corsproxy.io kept as final fallback (has been rate-limiting lately).
-  const CORS_PROXIES = [
-    'https://api.allorigins.win/raw?url=',
-    'https://api.codetabs.com/v1/proxy/?quest=',
-    'https://corsproxy.io/?'
-  ];
+  const PSI_API = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed';
 
   const ready = (fn) => {
     if (document.readyState !== 'loading') fn();
@@ -33,9 +27,9 @@
     section.innerHTML = `
       <div class="container">
         <div class="section-header">
-          <span class="section-tag"><i class="fas fa-bolt"></i> Live Demo</span>
+          <span class="section-tag"><i class="fas fa-bolt"></i> Live Demo · Powered by Google Lighthouse</span>
           <h2 class="section-title">Try My SEO Agent <span class="gradient-text">Live</span></h2>
-          <p class="section-desc">Paste any URL to run an instant SEO audit. This is a mini version of my AI SEO Agent running right in your browser — no signup, no backend.</p>
+          <p class="section-desc">Paste any URL to run a real SEO audit using the same Lighthouse engine Google uses internally. This is a mini version of my full AI SEO Agent.</p>
         </div>
 
         <div class="seo-audit-card">
@@ -51,7 +45,7 @@
           </form>
 
           <div class="seo-audit-hint">
-            <i class="fas fa-lightbulb"></i> Try: github.com, stripe.com, your own site
+            <i class="fas fa-info-circle"></i> Audit takes 20-30 seconds · Try github.com, stripe.com, or your own site
           </div>
 
           <div class="seo-audit-results" id="seoAuditResults" hidden></div>
@@ -78,13 +72,28 @@
     results.hidden = false;
     results.innerHTML = renderLoading(url);
 
+    // Cycle loading messages so users know we're still working
+    const loadingMessages = [
+      'Crawling page...',
+      'Running Lighthouse audits...',
+      'Analyzing SEO factors...',
+      'Generating report...',
+      'Almost done — Lighthouse is thorough...'
+    ];
+    let msgIdx = 0;
+    const msgInterval = setInterval(() => {
+      msgIdx = Math.min(msgIdx + 1, loadingMessages.length - 1);
+      const msgEl = document.getElementById('seoAuditLoadingMsg');
+      if (msgEl) msgEl.textContent = loadingMessages[msgIdx];
+    }, 6000);
+
     try {
-      const html = await fetchPageHtml(url);
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const checks = runChecks(doc, url);
-      results.innerHTML = renderResults(checks, url);
+      const lighthouseResult = await runPSIAudit(url);
+      clearInterval(msgInterval);
+      const data = extractSEOData(lighthouseResult);
+      results.innerHTML = renderResults(data, url);
     } catch (err) {
+      clearInterval(msgInterval);
       console.error('[SEO Audit] Failed:', err);
       results.innerHTML = renderError(err.message || 'Unknown error');
     } finally {
@@ -93,144 +102,92 @@
     }
   }
 
-  async function fetchPageHtml(url) {
-    let lastError;
-    for (const proxy of CORS_PROXIES) {
-      const proxyUrl = proxy + encodeURIComponent(url);
-      const proxyName = new URL(proxy).hostname;
-      console.log('[SEO Audit] Trying proxy:', proxyName);
+  async function runPSIAudit(url) {
+    const params = new URLSearchParams({
+      url: url,
+      category: 'SEO',
+      strategy: 'mobile'
+    });
+    const apiUrl = PSI_API + '?' + params.toString();
 
-      const ctrl = new AbortController();
-      const timeoutId = setTimeout(() => ctrl.abort(), 12000);
+    console.log('[SEO Audit] Calling Google PageSpeed Insights...');
+    const res = await fetch(apiUrl);
+    console.log('[SEO Audit] PSI returned:', res.status);
 
+    if (!res.ok) {
+      let errMsg = 'API returned HTTP ' + res.status;
       try {
-        const res = await fetch(proxyUrl, { signal: ctrl.signal });
-        clearTimeout(timeoutId);
-
-        if (!res.ok) {
-          console.warn('[SEO Audit] ' + proxyName + ' returned HTTP ' + res.status);
-          lastError = new Error('HTTP ' + res.status);
-          continue;
+        const errData = await res.json();
+        if (errData && errData.error && errData.error.message) {
+          errMsg = errData.error.message;
+          // Strip Google-style wrapper text
+          errMsg = errMsg.replace(/^Lighthouse returned error:\s*/i, '');
         }
+      } catch (e) { /* ignore */ }
 
-        const text = await res.text();
-        if (text && text.length > 100) {
-          console.log('[SEO Audit] Success via ' + proxyName + ' (' + text.length + ' bytes)');
-          return text;
-        }
-        lastError = new Error('Empty response');
-      } catch (e) {
-        clearTimeout(timeoutId);
-        console.warn('[SEO Audit] ' + proxyName + ' error:', e.message);
-        lastError = e;
-      }
+      if (res.status === 429) throw new Error('Rate limit reached — try again in a minute');
+      if (res.status === 400) throw new Error('Invalid URL or page blocks crawling');
+      if (res.status === 500) throw new Error('Google could not audit this URL. ' + errMsg);
+      throw new Error(errMsg);
     }
-    throw lastError || new Error('All proxies failed');
+
+    const data = await res.json();
+    if (!data.lighthouseResult) {
+      throw new Error('No Lighthouse data returned for this URL');
+    }
+    return data.lighthouseResult;
   }
 
-  function runChecks(doc, url) {
+  function extractSEOData(lighthouseResult) {
+    const seoCategory = lighthouseResult.categories && lighthouseResult.categories.seo;
+    if (!seoCategory) throw new Error('No SEO data in response');
+
+    const score = Math.round((seoCategory.score || 0) * 100);
+    const auditRefs = seoCategory.auditRefs || [];
+    const audits = lighthouseResult.audits || {};
+
     const checks = [];
+    for (const ref of auditRefs) {
+      const audit = audits[ref.id];
+      if (!audit) continue;
+      if (audit.scoreDisplayMode === 'notApplicable') continue;
 
-    // 1. Title
-    const titleEl = doc.querySelector('title');
-    const title = titleEl ? (titleEl.textContent || '').trim() : '';
-    if (!title) checks.push({ status: 'fail', label: 'Title tag', detail: 'Missing — critical for search rankings' });
-    else if (title.length < 30) checks.push({ status: 'warn', label: 'Title tag', detail: 'Too short (' + title.length + ' chars). Ideal: 50-60' });
-    else if (title.length > 65) checks.push({ status: 'warn', label: 'Title tag', detail: 'Too long (' + title.length + ' chars). Will get truncated' });
-    else checks.push({ status: 'pass', label: 'Title tag', detail: 'Present, ' + title.length + ' chars' });
+      let status;
+      if (audit.score === 1) status = 'pass';
+      else if (audit.score === 0) status = 'fail';
+      else if (audit.scoreDisplayMode === 'manual' || audit.scoreDisplayMode === 'informative') status = 'info';
+      else status = 'warn';
 
-    // 2. Meta description
-    const descEl = doc.querySelector('meta[name="description"]');
-    const desc = descEl ? (descEl.getAttribute('content') || '').trim() : '';
-    if (!desc) checks.push({ status: 'fail', label: 'Meta description', detail: 'Missing — affects SERP appearance' });
-    else if (desc.length < 120) checks.push({ status: 'warn', label: 'Meta description', detail: 'Too short (' + desc.length + ' chars). Ideal: 140-160' });
-    else if (desc.length > 165) checks.push({ status: 'warn', label: 'Meta description', detail: 'Too long (' + desc.length + ' chars). Will be truncated' });
-    else checks.push({ status: 'pass', label: 'Meta description', detail: 'Present, ' + desc.length + ' chars' });
-
-    // 3. H1
-    const h1s = doc.querySelectorAll('h1');
-    if (h1s.length === 0) checks.push({ status: 'fail', label: 'H1 heading', detail: 'No H1 found — page lacks topic hierarchy' });
-    else if (h1s.length === 1) checks.push({ status: 'pass', label: 'H1 heading', detail: 'Exactly 1 H1 found' });
-    else checks.push({ status: 'warn', label: 'H1 heading', detail: h1s.length + ' H1s found. Recommend exactly 1' });
-
-    // 4. Viewport
-    const viewport = doc.querySelector('meta[name="viewport"]');
-    checks.push(viewport
-      ? { status: 'pass', label: 'Mobile viewport', detail: 'Mobile-friendly viewport set' }
-      : { status: 'fail', label: 'Mobile viewport', detail: 'Missing — poor mobile experience' });
-
-    // 5. Canonical
-    const canonical = doc.querySelector('link[rel="canonical"]');
-    checks.push(canonical
-      ? { status: 'pass', label: 'Canonical URL', detail: 'Set — prevents duplicate content' }
-      : { status: 'warn', label: 'Canonical URL', detail: 'Missing — can cause duplicate content issues' });
-
-    // 6. HTTPS
-    checks.push(url.toLowerCase().startsWith('https://')
-      ? { status: 'pass', label: 'HTTPS', detail: 'Secure connection' }
-      : { status: 'fail', label: 'HTTPS', detail: 'Not using HTTPS — Google penalizes HTTP' });
-
-    // 7. Image alt text
-    const images = doc.querySelectorAll('img');
-    const imgsNoAlt = Array.from(images).filter(img => img.getAttribute('alt') === null);
-    if (images.length === 0) {
-      checks.push({ status: 'pass', label: 'Image alt text', detail: 'No images on page' });
-    } else if (imgsNoAlt.length === 0) {
-      checks.push({ status: 'pass', label: 'Image alt text', detail: 'All ' + images.length + ' images have alt text' });
-    } else if (imgsNoAlt.length / images.length < 0.3) {
-      checks.push({ status: 'warn', label: 'Image alt text', detail: imgsNoAlt.length + '/' + images.length + ' images missing alt' });
-    } else {
-      checks.push({ status: 'fail', label: 'Image alt text', detail: imgsNoAlt.length + '/' + images.length + ' images missing alt' });
+      checks.push({
+        status: status,
+        label: cleanText(audit.title),
+        detail: cleanDescription(audit.description) || (audit.displayValue || '')
+      });
     }
 
-    // 8. Open Graph
-    const ogTitle = doc.querySelector('meta[property="og:title"]');
-    const ogDesc = doc.querySelector('meta[property="og:description"]');
-    const ogImage = doc.querySelector('meta[property="og:image"]');
-    const ogCount = [ogTitle, ogDesc, ogImage].filter(Boolean).length;
-    if (ogCount === 3) checks.push({ status: 'pass', label: 'Open Graph tags', detail: 'Complete OG setup for social sharing' });
-    else if (ogCount > 0) checks.push({ status: 'warn', label: 'Open Graph tags', detail: ogCount + '/3 essential OG tags found' });
-    else checks.push({ status: 'fail', label: 'Open Graph tags', detail: 'Missing — social link previews will be plain' });
+    return { score: score, checks: checks };
+  }
 
-    // 9. Twitter Card
-    const twitterCard = doc.querySelector('meta[name="twitter:card"]');
-    checks.push(twitterCard
-      ? { status: 'pass', label: 'Twitter Card', detail: 'Set — Twitter shares look polished' }
-      : { status: 'warn', label: 'Twitter Card', detail: 'Missing — Twitter shares use fallback' });
+  function cleanText(s) {
+    if (!s) return '';
+    return s.replace(/`/g, '');
+  }
 
-    // 10. Structured data
-    const ldJson = doc.querySelectorAll('script[type="application/ld+json"]');
-    const microdata = doc.querySelectorAll('[itemscope]');
-    if (ldJson.length > 0) checks.push({ status: 'pass', label: 'Structured data', detail: ldJson.length + ' JSON-LD schema(s) found' });
-    else if (microdata.length > 0) checks.push({ status: 'pass', label: 'Structured data', detail: 'Microdata schema found' });
-    else checks.push({ status: 'warn', label: 'Structured data', detail: 'No Schema.org markup — missing rich results' });
-
-    // 11. Content depth
-    let text = '';
-    if (doc.body) {
-      const clone = doc.body.cloneNode(true);
-      clone.querySelectorAll('script, style, noscript').forEach(el => el.remove());
-      text = (clone.textContent || '').replace(/\s+/g, ' ').trim();
-    }
-    const wordCount = text ? text.split(/\s+/).length : 0;
-    if (wordCount >= 600) checks.push({ status: 'pass', label: 'Content depth', detail: '~' + wordCount.toLocaleString() + ' words — solid' });
-    else if (wordCount >= 300) checks.push({ status: 'pass', label: 'Content depth', detail: '~' + wordCount.toLocaleString() + ' words' });
-    else if (wordCount >= 100) checks.push({ status: 'warn', label: 'Content depth', detail: '~' + wordCount + ' words — thin content' });
-    else checks.push({ status: 'fail', label: 'Content depth', detail: '~' + wordCount + ' words — very thin' });
-
-    // 12. Language
-    const lang = doc.documentElement.getAttribute('lang');
-    checks.push(lang
-      ? { status: 'pass', label: 'Language declared', detail: 'lang="' + lang + '" set on HTML' }
-      : { status: 'warn', label: 'Language declared', detail: 'Missing lang attribute on HTML' });
-
-    return checks;
+  function cleanDescription(desc) {
+    if (!desc) return '';
+    desc = desc.replace(/\[Learn (more|how)[^\]]*\]\([^)]+\)\.?/gi, '').trim();
+    desc = desc.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+    desc = desc.replace(/`/g, '');
+    desc = desc.replace(/\s+/g, ' ').trim();
+    if (desc.length > 140) desc = desc.slice(0, 137) + '...';
+    return desc;
   }
 
   function renderLoading(url) {
     return '<div class="seo-audit-loading">' +
       '<div class="seo-audit-loading-spinner"></div>' +
-      '<p>Crawling <strong>' + escapeHtml(prettyUrl(url)) + '</strong> — running 12 SEO checks...</p>' +
+      '<p>Auditing <strong>' + escapeHtml(prettyUrl(url)) + '</strong></p>' +
+      '<p id="seoAuditLoadingMsg" class="seo-audit-loading-status">Crawling page...</p>' +
       '</div>';
   }
 
@@ -239,19 +196,18 @@
       '<i class="fas fa-exclamation-triangle"></i>' +
       '<div>' +
         '<h4>Could not audit this URL</h4>' +
-        '<p>' + escapeHtml(message) + '. The CORS proxy may be rate-limited. Try refreshing in a minute, or test with a different URL like github.com or stripe.com.</p>' +
+        '<p>' + escapeHtml(message) + '. Try a different URL like github.com or stripe.com.</p>' +
       '</div></div>';
   }
 
-  function renderResults(checks, url) {
-    const passed = checks.filter(c => c.status === 'pass').length;
-    const total = checks.length;
-    const pct = Math.round((passed / total) * 100);
+  function renderResults(data, url) {
+    const pct = data.score;
     const dashoffset = 283 - (283 * pct / 100);
-    const scoreColor = pct >= 75 ? '#10b981' : pct >= 50 ? '#f59e0b' : '#ef4444';
+    const scoreColor = pct >= 90 ? '#10b981' : pct >= 70 ? '#f59e0b' : '#ef4444';
+    const grade = pct >= 90 ? 'A' : pct >= 80 ? 'B' : pct >= 70 ? 'C' : pct >= 60 ? 'D' : 'F';
 
-    const iconMap = { pass: 'fa-check-circle', warn: 'fa-exclamation-circle', fail: 'fa-times-circle' };
-    const checksHtml = checks.map(c =>
+    const iconMap = { pass: 'fa-check-circle', warn: 'fa-exclamation-circle', fail: 'fa-times-circle', info: 'fa-info-circle' };
+    const checksHtml = data.checks.map(c =>
       '<div class="seo-check ' + c.status + '">' +
         '<i class="fas ' + iconMap[c.status] + ' seo-check-icon"></i>' +
         '<div class="seo-check-content">' +
@@ -267,20 +223,21 @@
           '<circle cx="50" cy="50" r="45" class="score-fill"/>' +
         '</svg>' +
         '<div class="score-text">' +
-          '<strong>' + passed + '/' + total + '</strong>' +
-          '<small>Passed</small>' +
+          '<strong>' + pct + '</strong>' +
+          '<small>SEO Score</small>' +
         '</div>' +
       '</div>' +
       '<div class="score-summary">' +
         '<h3>' + escapeHtml(prettyUrl(url)) + '</h3>' +
         '<p>' + getSummary(pct) + '</p>' +
+        '<div class="score-meta">Grade: <strong>' + grade + '</strong> · Powered by Google Lighthouse</div>' +
       '</div>' +
       '</div>' +
       '<div class="seo-checks-grid">' + checksHtml + '</div>' +
       '<div class="seo-audit-footer">' +
         '<div>' +
-          '<strong>Want a deeper audit?</strong>' +
-          '<p>My production AI SEO Agent uses Playwright for headless crawling + Gemini AI to generate prioritized fixes.</p>' +
+          '<strong>This is the Lighthouse SEO audit.</strong>' +
+          '<p>My production AI SEO Agent goes deeper: full crawls via Playwright + Gemini AI generates prioritized action items, not just pass/fail.</p>' +
         '</div>' +
         '<a href="https://github.com/mvamshi56/seoagent" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">' +
           '<i class="fab fa-github"></i> See the full version' +
@@ -289,10 +246,11 @@
   }
 
   function getSummary(pct) {
-    if (pct >= 85) return 'Excellent — strong SEO fundamentals.';
-    if (pct >= 70) return 'Good — solid basics with room to optimize.';
-    if (pct >= 50) return 'Average — several important issues to fix.';
-    return 'Needs significant SEO improvements.';
+    if (pct >= 90) return 'Excellent — strong SEO fundamentals across the board.';
+    if (pct >= 80) return 'Good — solid basics with minor improvements possible.';
+    if (pct >= 70) return 'Decent — several SEO issues worth addressing.';
+    if (pct >= 50) return 'Below average — important SEO problems found.';
+    return 'Significant SEO improvements needed.';
   }
 
   function prettyUrl(url) {
