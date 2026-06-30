@@ -50,11 +50,7 @@
 }
 
 /* ───────────────────────────────────────────
-   2. HERO NAME LETTER HOVER EFFECT (removed)
-   ─────────────────────────────────────────── */
-
-/* ───────────────────────────────────────────
-   3. ROI CALCULATOR SECTION
+   2. ROI CALCULATOR SECTION
    ─────────────────────────────────────────── */
 #roi-calculator {
   padding: 100px 0;
@@ -217,7 +213,7 @@
 }
 
 /* ───────────────────────────────────────────
-   4. AI CHAT WIDGET
+   3. AI CHAT WIDGET
    ─────────────────────────────────────────── */
 .ai-chat-beacon {
   position: fixed;
@@ -502,7 +498,6 @@
   color: var(--text-primary);
   outline: none;
   transition: border-color 0.2s;
-  resize: none;
 }
 .chat-input:focus { border-color: var(--accent-primary); }
 .chat-input::placeholder { color: var(--text-muted); }
@@ -544,13 +539,9 @@
     width: calc(100vw - 32px);
     right: 16px;
     bottom: 140px;
+    max-height: calc(100vh - 200px);
   }
   .ai-chat-beacon { right: 16px; }
-
-  .visitor-badge {
-    font-size: 0.72rem;
-    padding: 6px 12px;
-  }
 
   .project-card.has-case-study .project-footer {
     flex-direction: column;
@@ -564,7 +555,7 @@
 }
 
 /* ───────────────────────────────────────────
-   5. "AVAILABLE" HIRE BEACON (top of page)
+   4. "AVAILABLE" HIRE BEACON (top of page)
    ─────────────────────────────────────────── */
 .hire-beacon {
   display: inline-flex;
@@ -608,7 +599,7 @@
 }
 
 /* ───────────────────────────────────────────
-   6. SECTION REVEAL WORD-BY-WORD (optional)
+   5. SECTION REVEAL WORD-BY-WORD (optional)
    ─────────────────────────────────────────── */
 .word-reveal .word {
   display: inline-block;
@@ -619,8 +610,7 @@
 .word-reveal.animated .word { opacity: 1; transform: translateY(0); }
 
 /* ───────────────────────────────────────────
-   7. ANIMATED SKILL BAR UPGRADE
-      Adds a shimmer sweep to existing bars
+   6. ANIMATED SKILL BAR SHIMMER
    ─────────────────────────────────────────── */
 .skill-bar-fill {
   position: relative;
@@ -640,13 +630,11 @@
 }
 
 /* ───────────────────────────────────────────
-   8. PROJECT CARD LASER LINE
-      Adds a scanning neon line on hover
+   7. PROJECT CARD LASER LINE
+      Uses ::before so the original ::after top accent bar
+      from style.css stays intact.
    ─────────────────────────────────────────── */
-.project-card {
-  overflow: hidden;
-}
-.project-card::after {
+.project-card::before {
   content: '';
   position: absolute;
   left: 0; right: 0;
@@ -655,8 +643,10 @@
   top: -100%;
   transition: none;
   box-shadow: 0 0 12px rgba(99,102,241,0.8);
+  z-index: 2;
+  pointer-events: none;
 }
-.project-card:hover::after {
+.project-card:hover::before {
   animation: laserScan 0.7s ease-in-out forwards;
 }
 @keyframes laserScan {
@@ -665,7 +655,7 @@
 }
 
 /* ───────────────────────────────────────────
-   9. STAT CARD NUMBER GLOW ON ANIMATE
+   8. STAT CARD NUMBER GLOW ON ANIMATE
    ─────────────────────────────────────────── */
 .stat-card.animated .stat-number {
   animation: numGlow 0.6s ease 0.3s both;
@@ -677,51 +667,7 @@
 }
 
 /* ───────────────────────────────────────────
-   10. SCROLL PROGRESS BAR
-   ─────────────────────────────────────────── */
-.scroll-progress-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 3px;
-  width: 0%;
-  background: var(--accent-gradient);
-  z-index: 10000;
-  transition: width 0.1s ease-out;
-  box-shadow: 0 0 8px rgba(99,102,241,0.5);
-}
-
-/* ───────────────────────────────────────────
-   11. VISITOR ANALYTICS BADGE
-   ─────────────────────────────────────────── */
-.visitor-badge {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 8px;
-  margin-top: 10px;
-  padding: 7px 14px;
-  border-radius: 20px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-card);
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  animation: beaconFadeIn 0.6s ease 1.5s both;
-  max-width: 100%;
-  line-height: 1.4;
-}
-.visitor-badge i {
-  color: var(--accent-primary);
-  font-size: 0.85rem;
-  margin-top: 2px;
-  flex-shrink: 0;
-}
-.visitor-badge strong {
-  color: var(--text-primary);
-  font-weight: 700;
-}
-
-/* ───────────────────────────────────────────
-   12. CASE STUDY MODALS
+   9. CASE STUDY MODALS
    ─────────────────────────────────────────── */
 .project-card.has-case-study .project-footer {
   display: flex;
@@ -813,6 +759,7 @@
   justify-content: center;
   font-size: 0.9rem;
   transition: background 0.15s, color 0.15s, transform 0.15s;
+  z-index: 1;
 }
 .case-study-close:hover {
   background: var(--accent-gradient);
