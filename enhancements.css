@@ -50,27 +50,8 @@
 }
 
 /* ───────────────────────────────────────────
-   2. HERO NAME LETTER HOVER EFFECT
+   2. HERO NAME LETTER HOVER EFFECT (removed)
    ─────────────────────────────────────────── */
-.hero-name-animated {
-  display: inline-flex;
-  flex-wrap: wrap;
-  gap: 0;
-}
-.hero-name-animated .char {
-  display: inline-block;
-  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease;
-  cursor: default;
-  will-change: transform;
-}
-.hero-name-animated .char:hover {
-  transform: translateY(-6px) scale(1.15);
-  color: #a78bfa;
-}
-.hero-name-animated .char-space {
-  display: inline-block;
-  width: 0.35em;
-}
 
 /* ───────────────────────────────────────────
    3. ROI CALCULATOR SECTION
