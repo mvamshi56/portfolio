@@ -78,15 +78,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <!-- Auto cache-busting for local CSS (changes every minute) -->
+    
+        <!-- Auto cache-busting for local CSS (fresh on every load) -->
     <script>
       (function() {
-        var v = '?v=' + Math.floor(Date.now() / 60000);
+        var v = '?v=' + Date.now();
         window.__cacheBust = v;
         document.write('<link rel="stylesheet" href="style.css' + v + '">');
         document.write('<link rel="stylesheet" href="enhancements.css' + v + '">');
       })();
     </script>
+
 </head>
 <body>
     <!-- Loading Screen -->
