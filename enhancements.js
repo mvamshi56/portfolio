@@ -110,20 +110,17 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
   }
 
   /* ════════════════════════════════════════════════════════
-     3. LIVE GITHUB STATS
+     3. LIVE GITHUB STATS (with stale-cache fallback)
      ════════════════════════════════════════════════════════ */
   function injectGitHubStats() {
     const USERNAME = CONFIG.GITHUB_USERNAME;
     const CACHE_KEY = 'github_stats_v1';
-    const CACHE_TTL = 60 * 60 * 1000;
+    const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
 
     const impactSection = document.getElementById('impact');
-    if (!impactSection) {
-      console.warn('[GitHub Stats] #impact section not found');
-      return;
-    }
+    if (!impactSection) return;
 
-    // Inject skeleton immediately
+    // Inject section shell immediately
     const section = document.createElement('section');
     section.className = 'github-stats-section';
     section.id = 'github-stats';
@@ -147,74 +144,81 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
       </div>`;
     impactSection.parentNode.insertBefore(section, impactSection.nextSibling);
 
-    // Now fetch & render
     fetchAndRender();
 
     async function fetchAndRender() {
+      // 1. Load any cached data (regardless of age)
+      let cachedData = null;
+      let cacheAge = Infinity;
       try {
-        // Try cache first
-        let data = null;
-        try {
-          const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
-          if (cached && (Date.now() - cached.timestamp) < CACHE_TTL) {
-            data = cached.data;
-          }
-        } catch (e) { /* ignore */ }
-
-        if (!data) {
-          const [userRes, reposRes] = await Promise.all([
-            fetch(`https://api.github.com/users/${USERNAME}`),
-            fetch(`https://api.github.com/users/${USERNAME}/repos?per_page=100&sort=pushed`)
-          ]);
-          if (!userRes.ok || !reposRes.ok) throw new Error('GitHub API error');
-          const user = await userRes.json();
-          const repos = await reposRes.json();
-
-          const totalStars = repos.reduce((sum, r) => sum + (r.stargazers_count || 0), 0);
-          const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
-          const recentlyActive = repos.filter(r => new Date(r.pushed_at).getTime() > thirtyDaysAgo).length;
-
-          let lastCommitRepo = repos[0] || null;
-          let lastCommitTime = 0;
-          repos.forEach(r => {
-            const t = new Date(r.pushed_at).getTime();
-            if (t > lastCommitTime) {
-              lastCommitTime = t;
-              lastCommitRepo = r;
-            }
-          });
-
-          data = {
-            repos: user.public_repos,
-            stars: totalStars,
-            recentlyActive,
-            lastCommitTime,
-            lastCommitRepoName: lastCommitRepo ? lastCommitRepo.name : null
-          };
-
-          try {
-            localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
-          } catch (e) { /* ignore */ }
+        const cached = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+        if (cached && cached.data) {
+          cachedData = cached.data;
+          cacheAge = Date.now() - (cached.timestamp || 0);
         }
+      } catch (e) { /* ignore */ }
+
+      // 2. If cache is fresh, render immediately and skip API call
+      if (cachedData && cacheAge < CACHE_TTL) {
+        renderGitHubStats(cachedData);
+        return;
+      }
+
+      // 3. Otherwise, try to fetch fresh data
+      try {
+        const [userRes, reposRes] = await Promise.all([
+          fetch(`https://api.github.com/users/${USERNAME}`),
+          fetch(`https://api.github.com/users/${USERNAME}/repos?per_page=100&sort=pushed`)
+        ]);
+        if (!userRes.ok || !reposRes.ok) throw new Error('GitHub API HTTP ' + userRes.status);
+
+        const user = await userRes.json();
+        const repos = await reposRes.json();
+
+        const totalStars = repos.reduce((sum, r) => sum + (r.stargazers_count || 0), 0);
+        const thirtyDaysAgo = Date.now() - (30 * 24 * 60 * 60 * 1000);
+        const recentlyActive = repos.filter(r => new Date(r.pushed_at).getTime() > thirtyDaysAgo).length;
+
+        let lastCommitRepo = repos[0] || null;
+        let lastCommitTime = 0;
+        repos.forEach(r => {
+          const t = new Date(r.pushed_at).getTime();
+          if (t > lastCommitTime) { lastCommitTime = t; lastCommitRepo = r; }
+        });
+
+        const data = {
+          repos: user.public_repos,
+          stars: totalStars,
+          recentlyActive,
+          lastCommitTime,
+          lastCommitRepoName: lastCommitRepo ? lastCommitRepo.name : null
+        };
+
+        try {
+          localStorage.setItem(CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data }));
+        } catch (e) { /* ignore */ }
 
         renderGitHubStats(data);
       } catch (err) {
-        console.error('[GitHub Stats] Failed:', err);
-        renderGitHubError();
+        console.warn('[GitHub Stats] Fetch failed:', err.message);
+        if (cachedData) {
+          console.info('[GitHub Stats] Using stale cache as fallback');
+          renderGitHubStats(cachedData);
+        } else {
+          renderGitHubFallback();
+        }
       }
     }
 
     function renderGitHubStats(stats) {
       const grid = document.getElementById('ghStatsGrid');
       if (!grid) return;
-
       const lastCommitHref = stats.lastCommitRepoName
         ? `https://github.com/${USERNAME}/${stats.lastCommitRepoName}`
         : `https://github.com/${USERNAME}`;
       const lastCommitSub = stats.lastCommitRepoName
         ? `<span class="gh-stat-sublabel">→ ${escapeHtml(stats.lastCommitRepoName)}</span>`
         : '';
-
       grid.innerHTML = `
         <a href="https://github.com/${USERNAME}?tab=repositories" target="_blank" rel="noopener noreferrer" class="github-stat-card">
           <div class="gh-stat-icon"><i class="fas fa-code-branch"></i></div>
@@ -238,16 +242,32 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
         </a>`;
     }
 
-    function renderGitHubError() {
+    function renderGitHubFallback() {
+      // First-time visitor + GitHub API unreachable.
+      // Show clean cards that link to real GitHub so the section never looks broken.
       const grid = document.getElementById('ghStatsGrid');
       if (!grid) return;
       grid.innerHTML = `
-        <div class="github-stat-error">
-          <i class="fab fa-github"></i>
-          <span>View my repositories directly on
-            <a href="https://github.com/${USERNAME}" target="_blank" rel="noopener noreferrer">GitHub →</a>
-          </span>
-        </div>`;
+        <a href="https://github.com/${USERNAME}?tab=repositories" target="_blank" rel="noopener noreferrer" class="github-stat-card">
+          <div class="gh-stat-icon"><i class="fas fa-code-branch"></i></div>
+          <div class="gh-stat-value">View</div>
+          <div class="gh-stat-label">Public Repos</div>
+        </a>
+        <a href="https://github.com/${USERNAME}" target="_blank" rel="noopener noreferrer" class="github-stat-card">
+          <div class="gh-stat-icon"><i class="fas fa-star"></i></div>
+          <div class="gh-stat-value">View</div>
+          <div class="gh-stat-label">Stars on GitHub</div>
+        </a>
+        <a href="https://github.com/${USERNAME}" target="_blank" rel="noopener noreferrer" class="github-stat-card">
+          <div class="gh-stat-icon"><i class="fas fa-fire"></i></div>
+          <div class="gh-stat-value">Active</div>
+          <div class="gh-stat-label">Builder</div>
+        </a>
+        <a href="https://github.com/${USERNAME}" target="_blank" rel="noopener noreferrer" class="github-stat-card">
+          <div class="gh-stat-icon"><i class="fab fa-github"></i></div>
+          <div class="gh-stat-value">→</div>
+          <div class="gh-stat-label">See all on GitHub</div>
+        </a>`;
     }
 
     function relativeTime(timestamp) {
