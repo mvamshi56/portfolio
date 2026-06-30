@@ -17,7 +17,7 @@
   const CONFIG = {
     // If you deploy a serverless proxy (e.g. Vercel /api/chat), set this.
     // For GitHub Pages demo mode set to null → AI will use pre-scripted answers.
-    AI_PROXY_URL:'https://portfolio-sandy-ten-43.vercel.app/api/chat', // e.g. 'https://your-vercel-app.vercel.app/api/chat'
+    AI_PROXY_URL: 'https://portfolio-sandy-ten-43.vercel.app/api/chat', // e.g. 'https://your-vercel-app.vercel.app/api/chat'
 
     PERSONA_SYSTEM_PROMPT: `You are Vamshidhar Reddy M — an AI-Powered Digital Marketing Specialist with 8+ years of experience in SEO, PPC, AI Automation, and Growth Marketing, based in Hyderabad, India. You are answering questions from potential employers and clients visiting your portfolio site.
 
@@ -55,7 +55,6 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
 
   ready(() => {
     injectHeroMeshBlobs();
-    
     injectHireBeacon();
     injectROICalculator();
     injectAIChat();
@@ -86,9 +85,8 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
   }
 
   /* ════════════════════════════════════════════════════════
-     2. HERO NAME LETTER-HOVER ANIMATION
+     2. HERO NAME LETTER-HOVER ANIMATION (removed)
      ════════════════════════════════════════════════════════ */
-  
 
   /* ════════════════════════════════════════════════════════
      3. HIRE BEACON — replaces the plain badge in hero
@@ -422,14 +420,17 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
     document.querySelectorAll('.section-desc').forEach((el) => {
       el.classList.add('word-reveal');
       el.setAttribute('data-animate', 'word-reveal');
-      const words = el.textContent.trim().split(' ');
+      const words = el.textContent.trim().split(/\s+/);
       el.textContent = '';
       words.forEach((w, i) => {
         const span = document.createElement('span');
         span.className = 'word';
-        span.textContent = w + ' ';
+        span.textContent = w;
         span.style.transitionDelay = `${i * 0.04}s`;
         el.appendChild(span);
+        if (i < words.length - 1) {
+          el.appendChild(document.createTextNode(' '));
+        }
       });
     });
 
