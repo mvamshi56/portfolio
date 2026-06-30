@@ -1,6 +1,6 @@
 /**
  * VAMSHIDHAR REDDY M — PORTFOLIO ENHANCEMENTS 2026
- * Drop-in: add <script src="enhancements.js"></script> AFTER script.js in index.html
+ * Now with RAG (Retrieval-Augmented Generation) over GitHub README knowledge base
  */
 
 (function () {
@@ -13,6 +13,13 @@
     AI_PROXY_URL: 'https://portfolio-sandy-ten-43.vercel.app/api/chat',
 
     GITHUB_USERNAME: 'mvamshi56',
+
+    // RAG knowledge base — pulls these READMEs and uses them as context
+    PROJECT_REPOS: [
+      { name: 'AI SEO Agent', owner: 'mvamshi56', repo: 'seoagent' },
+      { name: 'AI Web Summarizer', owner: 'mvamshi56', repo: 'AI-Web-Summarizer' },
+      { name: 'AI Security Intelligence Platform', owner: 'mvamshi56', repo: 'AI-SECURITY' }
+    ],
 
     PERSONA_SYSTEM_PROMPT: `You are Vamshidhar Reddy M — an AI-Powered Digital Marketing Specialist with 8+ years of experience in SEO, PPC, AI Automation, and Growth Marketing, based in Hyderabad, India. You are answering questions from potential employers and clients visiting your portfolio site.
 
@@ -27,7 +34,7 @@ Key facts about you:
 - Email: digitalVamshidhar@gmail.com | LinkedIn: vamshidharreddym | GitHub: mvamshi56
 - Available for: Full-time roles, consulting, AI+marketing projects
 
-Be warm, concise, and confident. If asked about salary, say you're open to discussing based on scope and fit. Keep answers to 2–4 sentences max. Always end with a light invitation to connect.`,
+Be warm, concise, and confident. If asked about salary, say you're open to discussing based on scope and fit. Keep answers to 2–4 sentences max. Always end with a light invitation to connect. When you have access to specific project context below, use it to give precise technical answers.`,
 
     SCRIPTED_ANSWERS: {
       default: "Great question! I bring 8+ years of digital marketing expertise fused with hands-on AI development — a rare combo that turns strategy into measurable growth. I'd love to walk you through my work. Feel free to email me at digitalVamshidhar@gmail.com or connect on LinkedIn!",
@@ -52,6 +59,114 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
 
   function reinitTilt() {
     if (typeof window.__reinitTilt === 'function') window.__reinitTilt();
+  }
+
+  /* ════════════════════════════════════════════════════════
+     RAG — knowledge base from GitHub READMEs
+     ════════════════════════════════════════════════════════ */
+  const KNOWLEDGE_CACHE_KEY = 'project_knowledge_v1';
+  const KNOWLEDGE_CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+
+  const STOP_WORDS = new Set([
+    'the','a','an','and','or','but','is','are','was','were','be','been','being',
+    'have','has','had','do','does','did','will','would','could','should',
+    'i','you','he','she','it','we','they','me','my','your','his','her','our','their',
+    'this','that','these','those','tell','about','what','how','why','when','where','who','which',
+    'in','on','at','to','from','with','by','for','of','as','than','then','so','too','very',
+    'can','am','any','some','all','more','most','other','same','such','only','own','also',
+    'just','here','there','if','no','not','out','up','down','over','under','again'
+  ]);
+
+  function tokenize(text) {
+    return text.toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(t => t.length > 2 && !STOP_WORDS.has(t));
+  }
+
+  function chunkText(text, chunkSize = 400, overlap = 100) {
+    // Remove code blocks (they don't retrieve well) and excessive whitespace
+    const cleaned = text
+      .replace(/```[\s\S]*?```/g, '')
+      .replace(/`[^`]*`/g, '')
+      .replace(/!\[[^\]]*\]\([^)]*\)/g, '')  // remove markdown images
+      .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1') // keep link text, drop URL
+      .replace(/[#*_>]+/g, '')               // strip markdown
+      .replace(/
+{2,}/g, '
+')
+      .replace(/\s{2,}/g, ' ')
+      .trim();
+
+    const chunks = [];
+    let i = 0;
+    while (i < cleaned.length) {
+      const end = Math.min(i + chunkSize, cleaned.length);
+      const slice = cleaned.slice(i, end).trim();
+      if (slice.length >= 50) chunks.push(slice);
+      if (end >= cleaned.length) break;
+      i += (chunkSize - overlap);
+    }
+    return chunks;
+  }
+
+  async function fetchProjectReadme(owner, repo) {
+    // Try main branch first, then master
+    for (const branch of ['main', 'master']) {
+      try {
+        const res = await fetch(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/README.md`);
+        if (res.ok) return await res.text();
+      } catch (e) { /* try next */ }
+    }
+    return null;
+  }
+
+  async function loadProjectKnowledge() {
+    // Cache check
+    try {
+      const cached = JSON.parse(localStorage.getItem(KNOWLEDGE_CACHE_KEY) || 'null');
+      if (cached && (Date.now() - cached.timestamp) < KNOWLEDGE_CACHE_TTL && Array.isArray(cached.data)) {
+        return cached.data;
+      }
+    } catch (e) { /* ignore */ }
+
+    // Fetch all READMEs in parallel
+    const results = await Promise.all(
+      CONFIG.PROJECT_REPOS.map(async (proj) => {
+        const readme = await fetchProjectReadme(proj.owner, proj.repo);
+        if (!readme) return [];
+        return chunkText(readme).map(text => ({ project: proj.name, text }));
+      })
+    );
+    const knowledge = results.flat();
+
+    // Cache it
+    try {
+      localStorage.setItem(KNOWLEDGE_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: knowledge }));
+    } catch (e) { /* ignore */ }
+
+    return knowledge;
+  }
+
+  function retrieveRelevantChunks(query, knowledge, k = 3) {
+    const queryTokens = tokenize(query);
+    if (!queryTokens.length || !knowledge.length) return [];
+
+    const scored = knowledge.map(chunk => {
+      const text = chunk.text.toLowerCase();
+      let score = 0;
+      queryTokens.forEach(term => {
+        const wordRe = new RegExp('\\b' + term + '\\b', 'gi');
+        const matches = text.match(wordRe);
+        if (matches) score += matches.length;
+      });
+      return { project: chunk.project, text: chunk.text, score };
+    });
+
+    return scored
+      .filter(c => c.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, k);
   }
 
   /* ════════════════════════════════════════════════════════
@@ -96,7 +211,7 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
   }
 
   /* ════════════════════════════════════════════════════════
-     2. HIRE BEACON — replaces the plain hero badge entirely
+     2. HIRE BEACON
      ════════════════════════════════════════════════════════ */
   function injectHireBeacon() {
     const badge = document.querySelector('.hero-badge');
@@ -115,12 +230,11 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
   function injectGitHubStats() {
     const USERNAME = CONFIG.GITHUB_USERNAME;
     const CACHE_KEY = 'github_stats_v1';
-    const CACHE_TTL = 6 * 60 * 60 * 1000; // 6 hours
+    const CACHE_TTL = 6 * 60 * 60 * 1000;
 
     const impactSection = document.getElementById('impact');
     if (!impactSection) return;
 
-    // Inject section shell immediately
     const section = document.createElement('section');
     section.className = 'github-stats-section';
     section.id = 'github-stats';
@@ -147,7 +261,6 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
     fetchAndRender();
 
     async function fetchAndRender() {
-      // 1. Load any cached data (regardless of age)
       let cachedData = null;
       let cacheAge = Infinity;
       try {
@@ -158,13 +271,11 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
         }
       } catch (e) { /* ignore */ }
 
-      // 2. If cache is fresh, render immediately and skip API call
       if (cachedData && cacheAge < CACHE_TTL) {
         renderGitHubStats(cachedData);
         return;
       }
 
-      // 3. Otherwise, try to fetch fresh data
       try {
         const [userRes, reposRes] = await Promise.all([
           fetch(`https://api.github.com/users/${USERNAME}`),
@@ -202,7 +313,6 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
       } catch (err) {
         console.warn('[GitHub Stats] Fetch failed:', err.message);
         if (cachedData) {
-          console.info('[GitHub Stats] Using stale cache as fallback');
           renderGitHubStats(cachedData);
         } else {
           renderGitHubFallback();
@@ -243,8 +353,6 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
     }
 
     function renderGitHubFallback() {
-      // First-time visitor + GitHub API unreachable.
-      // Show clean cards that link to real GitHub so the section never looks broken.
       const grid = document.getElementById('ghStatsGrid');
       if (!grid) return;
       grid.innerHTML = `
@@ -408,7 +516,7 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
   }
 
   /* ════════════════════════════════════════════════════════
-     5. AI CHAT WIDGET
+     5. AI CHAT WIDGET (with RAG)
      ════════════════════════════════════════════════════════ */
   function injectAIChat() {
     const beacon = document.createElement('div');
@@ -431,22 +539,22 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
         <div class="chat-avatar">VR</div>
         <div class="chat-header-info">
           <p class="chat-header-name">Vamshidhar Reddy M</p>
-          <span class="chat-header-status">AI-Powered · Online</span>
+          <span class="chat-header-status">AI-Powered · RAG · Online</span>
         </div>
         <button class="chat-close" id="aiChatClose" aria-label="Close chat"><i class="fas fa-times"></i></button>
       </div>
       <div class="chat-messages" id="chatMessages"></div>
       <div class="chat-quick-replies" id="chatQuickReplies">
-        <button class="chat-quick-reply" data-q="Tell me about your experience">Experience</button>
-        <button class="chat-quick-reply" data-q="What AI tools have you built?">AI Projects</button>
-        <button class="chat-quick-reply" data-q="What are your SEO skills?">SEO Skills</button>
+        <button class="chat-quick-reply" data-q="How does the AI SEO Agent work?">SEO Agent</button>
+        <button class="chat-quick-reply" data-q="Tell me about the Web Summarizer">Web Summarizer</button>
+        <button class="chat-quick-reply" data-q="What's the Security Platform built with?">Security Platform</button>
         <button class="chat-quick-reply" data-q="Why should I hire you?">Why Hire You?</button>
       </div>
       <div class="chat-input-row">
-        <input type="text" class="chat-input" id="chatInput" placeholder="Ask Vamshidhar anything…" maxlength="300" autocomplete="off">
+        <input type="text" class="chat-input" id="chatInput" placeholder="Ask about my projects, experience…" maxlength="300" autocomplete="off">
         <button class="chat-send" id="chatSend" aria-label="Send message"><i class="fas fa-paper-plane"></i></button>
       </div>
-      <div class="chat-powered-by">AI-Powered Assistant · Always verify important info directly</div>`;
+      <div class="chat-powered-by">AI + RAG over my project READMEs · Always verify important info directly</div>`;
     document.body.appendChild(panel);
 
     const trigger    = document.getElementById('aiChatTrigger');
@@ -472,7 +580,12 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
       panel.classList.toggle('open', isOpen);
       if (isOpen) {
         if (messagesEl.children.length === 0) {
-          addBotMessage("Hi! I'm Vamshidhar's AI assistant. Ask me about my experience, AI projects, or why I'd be a great fit for your team 👋");
+          addBotMessage("Hi! I'm Vamshidhar's AI assistant — I have access to my actual project READMEs, so ask me anything specific about my AI tools or experience 👋");
+        }
+        // Prefetch knowledge in background so first question is fast
+        if (!window.__knowledgeLoaded) {
+          window.__knowledgeLoaded = true;
+          loadProjectKnowledge().catch(() => { window.__knowledgeLoaded = false; });
         }
         setTimeout(() => { try { chatInput.focus(); } catch (_) {} }, 200);
       }
@@ -498,17 +611,38 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
       }
     });
 
-    function addBotMessage(text) {
+    function addBotMessage(text, sources) {
       const wrap = document.createElement('div');
       wrap.className = 'chat-msg bot';
       const avatar = document.createElement('div');
       avatar.className = 'chat-msg-avatar';
       avatar.textContent = 'VR';
+      const content = document.createElement('div');
+      content.style.flex = '1';
       const bubble = document.createElement('div');
       bubble.className = 'chat-msg-bubble';
       bubble.textContent = text;
+      content.appendChild(bubble);
+
+      // Source citations (if RAG was used)
+      if (sources && sources.length) {
+        const srcRow = document.createElement('div');
+        srcRow.className = 'chat-msg-sources';
+        const label = document.createElement('span');
+        label.className = 'chat-msg-sources-label';
+        label.textContent = 'Referenced:';
+        srcRow.appendChild(label);
+        sources.forEach(s => {
+          const tag = document.createElement('span');
+          tag.className = 'chat-msg-source-tag';
+          tag.textContent = s;
+          srcRow.appendChild(tag);
+        });
+        content.appendChild(srcRow);
+      }
+
       wrap.appendChild(avatar);
-      wrap.appendChild(bubble);
+      wrap.appendChild(content);
       messagesEl.appendChild(wrap);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
@@ -528,13 +662,17 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
 
-    function showTyping() {
+    function showTyping(label) {
       const div = document.createElement('div');
       div.className = 'chat-msg bot';
       div.id = 'chatTyping';
-      div.innerHTML = `
+      const inner = `
         <div class="chat-msg-avatar">VR</div>
-        <div class="chat-typing"><span></span><span></span><span></span></div>`;
+        <div class="chat-typing-wrap">
+          <div class="chat-typing"><span></span><span></span><span></span></div>
+          ${label ? `<div class="chat-typing-label">${escapeHtml(label)}</div>` : ''}
+        </div>`;
+      div.innerHTML = inner;
       messagesEl.appendChild(div);
       messagesEl.scrollTop = messagesEl.scrollHeight;
     }
@@ -552,40 +690,75 @@ Be warm, concise, and confident. If asked about salary, say you're open to discu
       addUserMessage(text);
       history.push({ role: 'user', content: text });
 
-      await sleep(300);
-      showTyping();
+      await sleep(200);
 
-      let reply;
+      // Step 1: Retrieve relevant context from project READMEs
+      showTyping('Searching my project READMEs…');
+      let relevantChunks = [];
       try {
+        const knowledge = await loadProjectKnowledge();
+        relevantChunks = retrieveRelevantChunks(text, knowledge, 3);
+      } catch (e) {
+        console.warn('[RAG] Knowledge load failed:', e);
+      }
+
+      removeTyping();
+      await sleep(150);
+      showTyping(relevantChunks.length ? 'Composing answer with context…' : 'Thinking…');
+
+      // Step 2: Build enriched system prompt with retrieved context
+      let reply;
+      let sourcesUsed = [];
+      try {
+        if (relevantChunks.length) {
+          sourcesUsed = [...new Set(relevantChunks.map(c => c.project))];
+        }
         if (CONFIG.AI_PROXY_URL) {
-          reply = await fetchAIReply(history);
+          reply = await fetchAIReply(history, relevantChunks);
         } else {
           reply = await mockAIReply(text);
         }
       } catch (err) {
         reply = "Sorry, I hit a snag! Please email digitalVamshidhar@gmail.com directly — I'll respond promptly 🙂";
+        sourcesUsed = [];
       }
 
       await sleep(200);
       removeTyping();
-      addBotMessage(reply);
+      addBotMessage(reply, sourcesUsed);
       history.push({ role: 'assistant', content: reply });
 
       isThinking = false;
       sendBtn.disabled = false;
     }
 
-    async function fetchAIReply(msgs) {
+    async function fetchAIReply(msgs, relevantChunks) {
+      let systemPrompt = CONFIG.PERSONA_SYSTEM_PROMPT;
+      if (relevantChunks && relevantChunks.length) {
+        const contextBlock = relevantChunks
+          .map(c => `[From ${c.project} README]:
+${c.text}`)
+          .join('
+
+---
+
+');
+        systemPrompt += `
+
+RELEVANT PROJECT CONTEXT (use this when answering, speak naturally in first person):
+${contextBlock}`;
+      }
+
       const ctrl = new AbortController();
-      const timeoutId = setTimeout(() => ctrl.abort(), 15000);
+      const timeoutId = setTimeout(() => ctrl.abort(), 20000);
       try {
         const res = await fetch(CONFIG.AI_PROXY_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            system: CONFIG.PERSONA_SYSTEM_PROMPT,
+            system: systemPrompt,
             messages: msgs,
-            max_tokens: 200
+            max_tokens: 250
           }),
           signal: ctrl.signal
         });
