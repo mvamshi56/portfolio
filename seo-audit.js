@@ -436,8 +436,10 @@
         '</div></div>'
     ).join('');
 
-    return '<div class="seo-audit-score">' +
+       return '<button class="seo-audit-close-btn" id="seoAuditCloseBtn" aria-label="Close results"><i class="fas fa-times"></i></button>' +
+      '<div class="seo-audit-score">' +
       '<div class="score-ring" style="--score-color: ' + scoreColor + '; --final-offset: ' + dashoffset + ';">' +
+
         '<svg viewBox="0 0 100 100" class="score-ring-svg">' +
           '<circle cx="50" cy="50" r="45" class="score-track"/>' +
           '<circle cx="50" cy="50" r="45" class="score-fill"/>' +
