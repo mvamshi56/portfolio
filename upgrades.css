@@ -407,7 +407,7 @@ a:focus-visible {
    ─────────────────────────────────────────── */
 .profile-image {
   object-fit: cover;
-  object-position: center 35%;
+  object-position: center 45%;
   transform: scale(1.8);
   border-radius: 50% !important;
   clip-path: circle(50% at center);
@@ -417,6 +417,7 @@ a:focus-visible {
 .profile-image-wrapper {
   overflow: hidden;
   border-radius: 50% !important;
+  position: relative;
 }
 
 /* Ensure the card itself has proper circular clipping */
@@ -426,11 +427,74 @@ a:focus-visible {
   overflow: hidden;
 }
 
-/* Alternative: If you want even more zoom */
+/* Enhanced decorative rotating ring */
+.profile-ring {
+  position: absolute !important;
+  inset: -15px !important;
+  border: 3px dashed rgba(99, 102, 241, 0.5) !important;
+  border-radius: 50% !important;
+  opacity: 1 !important;
+  animation: rotate360 20s linear infinite !important;
+  z-index: 2 !important;
+  pointer-events: none !important;
+}
+
+/* Enhanced glow effect */
+.profile-glow {
+  position: absolute !important;
+  inset: -40px !important;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.2), transparent) !important;
+  opacity: 0.8 !important;
+  filter: blur(40px) !important;
+  z-index: 0 !important;
+  border-radius: 50% !important;
+  pointer-events: none !important;
+}
+
+/* Additional inner ring for depth */
+.profile-image-wrapper::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  border: 2px solid rgba(139, 92, 246, 0.4);
+  pointer-events: none;
+  z-index: 1;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+/* Pulse animation for inner ring */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+}
+
+/* Rotate animation */
+@keyframes rotate360 {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Desktop adjustments */
 @media (min-width: 768px) {
   .profile-image {
     transform: scale(2);
-    object-position: center 30%;
+    object-position: center 40%;
+  }
+  
+  .profile-ring {
+    inset: -20px !important;
+    border-width: 4px !important;
   }
 }
 
