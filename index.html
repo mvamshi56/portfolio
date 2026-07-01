@@ -86,8 +86,67 @@
         window.__cacheBust = v;
         document.write('<link rel="stylesheet" href="style.css' + v + '">');
         document.write('<link rel="stylesheet" href="enhancements.css' + v + '">');
+        document.write('<link rel="stylesheet" href="upgrades.css' + v + '">');
       })();
     </script>
+
+    <!-- SEO Enhancements: Additional Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Vamshidhar Reddy M Portfolio",
+      "url": "https://mvamshi56.github.io/portfolio/",
+      "description": "Professional portfolio showcasing AI-powered digital marketing projects and expertise",
+      "author": {"@type": "Person", "name": "Vamshidhar Reddy M"},
+      "inLanguage": "en-US"
+    }
+    </script>
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "ItemList",
+      "name": "AI Projects Portfolio",
+      "itemListElement": [
+        {
+          "@type": "SoftwareApplication",
+          "position": 1,
+          "name": "AI SEO Agent",
+          "description": "Full-stack AI SEO audit tool using TypeScript and Gemini AI",
+          "applicationCategory": "DeveloperApplication",
+          "author": {"@type": "Person", "name": "Vamshidhar Reddy M"},
+          "codeRepository": "https://github.com/mvamshi56/seoagent",
+          "programmingLanguage": ["TypeScript", "JavaScript"]
+        },
+        {
+          "@type": "SoftwareApplication",
+          "position": 2,
+          "name": "AI Web Summarizer",
+          "description": "Chrome extension powered by Groq AI for real-time web content summarization",
+          "applicationCategory": "BrowserExtension",
+          "author": {"@type": "Person", "name": "Vamshidhar Reddy M"},
+          "codeRepository": "https://github.com/mvamshi56/AI-Web-Summarizer",
+          "programmingLanguage": ["JavaScript", "HTML"]
+        },
+        {
+          "@type": "SoftwareApplication",
+          "position": 3,
+          "name": "AI Security Intelligence Platform",
+          "description": "AI-powered security platform with MCP server architecture",
+          "applicationCategory": "DeveloperApplication",
+          "author": {"@type": "Person", "name": "Vamshidhar Reddy M"},
+          "codeRepository": "https://github.com/mvamshi56/AI-SECURITY",
+          "programmingLanguage": ["TypeScript"]
+        }
+      ]
+    }
+    </script>
+
+    <!-- Additional SEO Meta Tags -->
+    <meta name="geo.region" content="IN-TG">
+    <meta name="geo.placename" content="Hyderabad">
+    <link rel="preconnect" href="https://api.github.com">
 
 </head>
 <body>
@@ -1006,6 +1065,7 @@
         document.write('<script src="script.js' + v + '"><\/script>');
         document.write('<script src="enhancements.js' + v + '"><\/script>');
         document.write('<script src="seo-audit.js' + v + '"><\/script>');
+        document.write('<script src="upgrades.js' + v + '"><\/script>');
       })();
     </script>
 </body>
