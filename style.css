@@ -1077,6 +1077,7 @@ html.theme-transitioning .progress-ring-fill {
     .hero-badge { font-size: 0.75rem; padding: 6px 14px; }
     .section-desc { font-size: 0.9rem; }
     .footer-logo .logo-text { display: none; }
+    .contact-resume-row { flex-direction: column; }
 }
 
 ::selection { background: var(--accent-primary); color: white; }
