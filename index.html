@@ -156,20 +156,45 @@
             <div class="loading-diamond">
                 <svg viewBox="0 0 100 100" class="diamond-svg">
                     <defs>
-                        <linearGradient id="loadDiamGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#6366f1"/>
-                            <stop offset="50%" stop-color="#8b5cf6"/>
+                        <linearGradient id="loadTop" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#22d3ee"/>
+                            <stop offset="100%" stop-color="#06b6d4"/>
+                        </linearGradient>
+                        <linearGradient id="loadUL" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#3b82f6"/>
+                            <stop offset="100%" stop-color="#6366f1"/>
+                        </linearGradient>
+                        <linearGradient id="loadUR" x1="100%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#d946ef"/>
                             <stop offset="100%" stop-color="#ec4899"/>
                         </linearGradient>
+                        <linearGradient id="loadML" x1="0%" y1="50%" x2="100%" y2="50%">
+                            <stop offset="0%" stop-color="#6366f1"/>
+                            <stop offset="100%" stop-color="#8b5cf6"/>
+                        </linearGradient>
+                        <linearGradient id="loadMR" x1="100%" y1="50%" x2="0%" y2="50%">
+                            <stop offset="0%" stop-color="#ec4899"/>
+                            <stop offset="100%" stop-color="#db2777"/>
+                        </linearGradient>
+                        <linearGradient id="loadLL" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#8b5cf6"/>
+                            <stop offset="100%" stop-color="#7e22ce"/>
+                        </linearGradient>
+                        <linearGradient id="loadLR" x1="100%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#db2777"/>
+                            <stop offset="100%" stop-color="#be185d"/>
+                        </linearGradient>
                     </defs>
-                    <polygon points="50,3 90,50 50,97 10,50"
-                             fill="none" stroke="url(#loadDiamGrad)" stroke-width="2.5"/>
-                    <polygon points="50,3 50,50 10,50 30,26" fill="url(#loadDiamGrad)" opacity="0.15"/>
-                    <polygon points="50,3 70,26 90,50 50,50" fill="url(#loadDiamGrad)" opacity="0.12"/>
-                    <polygon points="10,50 30,74 50,97 50,50" fill="url(#loadDiamGrad)" opacity="0.1"/>
-                    <polygon points="90,50 50,50 50,97 70,74" fill="url(#loadDiamGrad)" opacity="0.1"/>
-                    <polygon points="50,3 62,18 50,32 38,18" fill="white" opacity="0.15"/>
-                    <text x="50" y="58" text-anchor="middle" fill="url(#loadDiamGrad)"
+                    <polygon points="50,3 90,50 50,97 10,50" fill="#0d0d1a"/>
+                    <polygon points="50,3 72,26 28,26" fill="url(#loadTop)" stroke="white" stroke-width="0.8"/>
+                    <polygon points="28,26 8,50 50,50" fill="url(#loadUL)" stroke="white" stroke-width="0.8"/>
+                    <polygon points="72,26 50,50 92,50" fill="url(#loadUR)" stroke="white" stroke-width="0.8"/>
+                    <polygon points="8,50 28,74 50,50" fill="url(#loadML)" stroke="white" stroke-width="0.8"/>
+                    <polygon points="92,50 50,50 72,74" fill="url(#loadMR)" stroke="white" stroke-width="0.8"/>
+                    <polygon points="28,74 50,97 50,50" fill="url(#loadLL)" stroke="white" stroke-width="0.8"/>
+                    <polygon points="72,74 50,50 50,97" fill="url(#loadLR)" stroke="white" stroke-width="0.8"/>
+                    <polygon points="50,3 66,22 50,30 34,22" fill="white" opacity="0.35"/>
+                    <text x="50" y="58" text-anchor="middle" fill="white"
                           font-family="'Space Grotesk', sans-serif" font-weight="800"
                           font-size="26" letter-spacing="-0.5">MVR</text>
                 </svg>
@@ -202,52 +227,64 @@
                 <div class="logo-diamond">
                     <svg viewBox="0 0 100 100" class="diamond-svg">
                         <defs>
-                            <linearGradient id="diamTop" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stop-color="#818cf8"/>
+                            <linearGradient id="facetTop" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#22d3ee"/>
+                                <stop offset="100%" stop-color="#06b6d4"/>
+                            </linearGradient>
+                            <linearGradient id="facetUL" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#3b82f6"/>
                                 <stop offset="100%" stop-color="#6366f1"/>
                             </linearGradient>
-                            <linearGradient id="diamLeft" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#a78bfa"/>
-                                <stop offset="100%" stop-color="#6366f1"/>
-                            </linearGradient>
-                            <linearGradient id="diamRight" x1="100%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stop-color="#f472b6"/>
-                                <stop offset="100%" stop-color="#8b5cf6"/>
-                            </linearGradient>
-                            <linearGradient id="diamBottom" x1="0%" y1="0%" x2="0%" y2="100%">
-                                <stop offset="0%" stop-color="#8b5cf6"/>
+                            <linearGradient id="facetUR" x1="100%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#d946ef"/>
                                 <stop offset="100%" stop-color="#ec4899"/>
                             </linearGradient>
-                            <linearGradient id="diamCenter" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <linearGradient id="facetML" x1="0%" y1="50%" x2="100%" y2="50%">
                                 <stop offset="0%" stop-color="#6366f1"/>
-                                <stop offset="100%" stop-color="#a78bfa"/>
+                                <stop offset="100%" stop-color="#8b5cf6"/>
+                            </linearGradient>
+                            <linearGradient id="facetMR" x1="100%" y1="50%" x2="0%" y2="50%">
+                                <stop offset="0%" stop-color="#ec4899"/>
+                                <stop offset="100%" stop-color="#db2777"/>
+                            </linearGradient>
+                            <linearGradient id="facetLL" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#8b5cf6"/>
+                                <stop offset="100%" stop-color="#7e22ce"/>
+                            </linearGradient>
+                            <linearGradient id="facetLR" x1="100%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="#db2777"/>
+                                <stop offset="100%" stop-color="#be185d"/>
+                            </linearGradient>
+                            <linearGradient id="diamondShine" x1="0%" y1="0%" x2="0%" y2="100%">
+                                <stop offset="0%" stop-color="white" stop-opacity="0.5"/>
+                                <stop offset="100%" stop-color="white" stop-opacity="0"/>
                             </linearGradient>
                             <filter id="diamondGlow">
-                                <feDropShadow dx="0" dy="1" stdDeviation="3" flood-color="#6366f1" flood-opacity="0.4"/>
+                                <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#6366f1" flood-opacity="0.5"/>
                             </filter>
-                            <clipPath id="diamClip">
-                                <polygon points="50,3 90,50 50,97 10,50"/>
-                            </clipPath>
                         </defs>
-                        <!-- Main diamond body -->
-                        <polygon points="50,3 90,50 50,97 10,50" fill="url(#diamTop)" stroke="url(#diamRight)" stroke-width="1.5" filter="url(#diamondGlow)"/>
-                        <!-- Upper-left facet -->
-                        <polygon points="50,3 50,50 10,50 30,26" fill="url(#diamLeft)" opacity="0.6"/>
-                        <!-- Upper-right facet -->
-                        <polygon points="50,3 70,26 90,50 50,50" fill="url(#diamRight)" opacity="0.6"/>
-                        <!-- Lower-left facet -->
-                        <polygon points="10,50 30,74 50,97 50,50" fill="url(#diamBottom)" opacity="0.5"/>
-                        <!-- Lower-right facet -->
-                        <polygon points="90,50 50,50 50,97 70,74" fill="url(#diamCenter)" opacity="0.5"/>
-                        <!-- Center band -->
-                        <polygon points="10,50 30,26 50,50 30,74" fill="url(#diamLeft)" opacity="0.3"/>
-                        <polygon points="90,50 70,26 50,50 70,74" fill="url(#diamRight)" opacity="0.3"/>
-                        <!-- Shine highlight -->
-                        <polygon points="50,3 62,18 50,32 38,18" fill="white" opacity="0.25"/>
+                        <!-- Outer glow base -->
+                        <polygon points="50,3 90,50 50,97 10,50" fill="none" stroke="#8b5cf6" stroke-width="1.5" filter="url(#diamondGlow)"/>
+                        <!-- Top -->
+                        <polygon points="50,3 72,26 28,26" fill="url(#facetTop)" stroke="white" stroke-width="0.8"/>
+                        <!-- Upper-left -->
+                        <polygon points="28,26 8,50 50,50" fill="url(#facetUL)" stroke="white" stroke-width="0.8"/>
+                        <!-- Upper-right -->
+                        <polygon points="72,26 50,50 92,50" fill="url(#facetUR)" stroke="white" stroke-width="0.8"/>
+                        <!-- Mid-left -->
+                        <polygon points="8,50 28,74 50,50" fill="url(#facetML)" stroke="white" stroke-width="0.8"/>
+                        <!-- Mid-right -->
+                        <polygon points="92,50 50,50 72,74" fill="url(#facetMR)" stroke="white" stroke-width="0.8"/>
+                        <!-- Lower-left -->
+                        <polygon points="28,74 50,97 50,50" fill="url(#facetLL)" stroke="white" stroke-width="0.8"/>
+                        <!-- Lower-right -->
+                        <polygon points="72,74 50,50 50,97" fill="url(#facetLR)" stroke="white" stroke-width="0.8"/>
+                        <!-- Shine overlay on top facet -->
+                        <polygon points="50,3 66,22 50,30 34,22" fill="url(#diamondShine)"/>
                         <!-- MVR text -->
                         <text x="50" y="58" text-anchor="middle" fill="white"
                               font-family="'Space Grotesk', sans-serif" font-weight="800"
-                              font-size="24" letter-spacing="-0.5">MVR</text>
+                              font-size="22" letter-spacing="-0.5">MVR</text>
                     </svg>
                 </div>
                 <div class="logo-text-wrap">
@@ -1042,16 +1079,47 @@
                         <div class="logo-diamond">
                             <svg viewBox="0 0 100 100" class="diamond-svg">
                                 <defs>
-                                    <linearGradient id="diamFooter" x1="0%" y1="0%" x2="100%" y2="100%">
-                                        <stop offset="0%" stop-color="#6366f1"/>
-                                        <stop offset="50%" stop-color="#8b5cf6"/>
+                                    <linearGradient id="facetTopF" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#22d3ee"/>
+                                        <stop offset="100%" stop-color="#06b6d4"/>
+                                    </linearGradient>
+                                    <linearGradient id="facetULF" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#3b82f6"/>
+                                        <stop offset="100%" stop-color="#6366f1"/>
+                                    </linearGradient>
+                                    <linearGradient id="facetURF" x1="100%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#d946ef"/>
                                         <stop offset="100%" stop-color="#ec4899"/>
                                     </linearGradient>
+                                    <linearGradient id="facetMLF" x1="0%" y1="50%" x2="100%" y2="50%">
+                                        <stop offset="0%" stop-color="#6366f1"/>
+                                        <stop offset="100%" stop-color="#8b5cf6"/>
+                                    </linearGradient>
+                                    <linearGradient id="facetMRF" x1="100%" y1="50%" x2="0%" y2="50%">
+                                        <stop offset="0%" stop-color="#ec4899"/>
+                                        <stop offset="100%" stop-color="#db2777"/>
+                                    </linearGradient>
+                                    <linearGradient id="facetLLF" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#8b5cf6"/>
+                                        <stop offset="100%" stop-color="#7e22ce"/>
+                                    </linearGradient>
+                                    <linearGradient id="facetLRF" x1="100%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#db2777"/>
+                                        <stop offset="100%" stop-color="#be185d"/>
+                                    </linearGradient>
                                 </defs>
-                                <polygon points="50,3 90,50 50,97 10,50" fill="none" stroke="url(#diamFooter)" stroke-width="2" filter="url(#diamondGlow)"/>
-                                <text x="50" y="58" text-anchor="middle" fill="url(#diamFooter)"
+                                <polygon points="50,3 90,50 50,97 10,50" fill="#1a1a2e"/>
+                                <polygon points="50,3 72,26 28,26" fill="url(#facetTopF)" stroke="white" stroke-width="0.8"/>
+                                <polygon points="28,26 8,50 50,50" fill="url(#facetULF)" stroke="white" stroke-width="0.8"/>
+                                <polygon points="72,26 50,50 92,50" fill="url(#facetURF)" stroke="white" stroke-width="0.8"/>
+                                <polygon points="8,50 28,74 50,50" fill="url(#facetMLF)" stroke="white" stroke-width="0.8"/>
+                                <polygon points="92,50 50,50 72,74" fill="url(#facetMRF)" stroke="white" stroke-width="0.8"/>
+                                <polygon points="28,74 50,97 50,50" fill="url(#facetLLF)" stroke="white" stroke-width="0.8"/>
+                                <polygon points="72,74 50,50 50,97" fill="url(#facetLRF)" stroke="white" stroke-width="0.8"/>
+                                <polygon points="50,3 66,22 50,30 34,22" fill="white" opacity="0.3"/>
+                                <text x="50" y="58" text-anchor="middle" fill="white"
                                       font-family="'Space Grotesk', sans-serif" font-weight="800"
-                                      font-size="24" letter-spacing="-0.5">MVR</text>
+                                      font-size="22" letter-spacing="-0.5">MVR</text>
                             </svg>
                         </div>
                         <span class="logo-text">MVR</span>
