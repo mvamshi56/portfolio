@@ -957,6 +957,8 @@ html.theme-transitioning .progress-ring-fill {
 .contact-card-header h3 { font-family: var(--font-display); font-size: 1.3rem; }
 .contact-card p { color: var(--text-secondary); margin-bottom: 24px; font-size: 0.95rem; }
 .contact-card .btn { margin-bottom: 12px; }
+.contact-resume-row { display: flex; gap: 8px; }
+.contact-resume-row .btn { flex: 1; justify-content: center; }
 
 /* ============================================
    FOOTER
