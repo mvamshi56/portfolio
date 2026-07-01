@@ -409,10 +409,20 @@ a:focus-visible {
   object-fit: cover;
   object-position: center 30%;
   transform: scale(1.4);
+  border-radius: 50% !important;
+  clip-path: circle(50% at center);
 }
 
-/* Better circular crop */
+/* Make the wrapper perfectly circular */
 .profile-image-wrapper {
+  overflow: hidden;
+  border-radius: 50% !important;
+}
+
+/* Ensure the card itself has proper circular clipping */
+.profile-card .profile-image-wrapper,
+.hero-visual .profile-image-wrapper {
+  border-radius: 50% !important;
   overflow: hidden;
 }
 
