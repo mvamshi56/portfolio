@@ -403,40 +403,61 @@ a:focus-visible {
 }
 
 /* ───────────────────────────────────────────
-   8. PROFILE IMAGE OPTIMIZATION - CIRCULAR WITH DECORATIONS
+   8. PROFILE IMAGE OPTIMIZATION - CIRCULAR WITH DECORATIVE RINGS
    ─────────────────────────────────────────── */
+
+/* Profile image - keep it circular and properly scaled */
 .profile-image {
+  width: 100% !important;
+  height: 100% !important;
   object-fit: cover;
-  object-position: center 45%;
-  transform: scale(1.8);
+  object-position: center;
   border-radius: 50% !important;
-  clip-path: circle(50% at center);
+  background: transparent;
+  display: block;
+  border: 4px solid var(--bg-card);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Make the wrapper perfectly circular */
+/* Image wrapper - circular container */
 .profile-image-wrapper {
-  border-radius: 50% !important;
   position: relative;
+  width: 200px !important;
+  height: 200px !important;
+  margin: 0 auto 24px !important;
+  border-radius: 50% !important;
+  overflow: visible !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+}
+
+/* Allow space for decorative rings around the image */
+.profile-card {
+  padding: 40px 32px !important;
   overflow: visible !important;
 }
 
-/* Ensure image clips to circle */
-.profile-card .profile-image-wrapper .profile-image,
-.hero-visual .profile-image-wrapper .profile-image {
-  border-radius: 50% !important;
+/* Inner pulsing ring */
+.profile-image-wrapper::before {
+  content: '' !important;
+  display: block !important;
+  position: absolute;
+  inset: -12px;
+  border-radius: 50%;
+  border: 2px solid rgba(139, 92, 246, 0.4);
+  pointer-events: none;
+  z-index: 3;
+  animation: pulse-ring 3s ease-in-out infinite;
 }
 
-/* Allow space for decorative rings */
-.profile-card {
-  padding: 35px !important;
-}
-
-/* SHOW decorative rotating ring */
+/* Outer rotating dashed ring */
 .profile-ring {
   display: block !important;
   position: absolute !important;
-  inset: -20px !important;
-  border: 3px dashed rgba(99, 102, 241, 0.7) !important;
+  inset: -24px !important;
+  border: 3px dashed rgba(99, 102, 241, 0.6) !important;
   border-radius: 50% !important;
   opacity: 1 !important;
   animation: rotate360 20s linear infinite !important;
@@ -444,45 +465,69 @@ a:focus-visible {
   pointer-events: none !important;
 }
 
-/* SHOW glow effect */
+/* Glow effect behind the image */
 .profile-glow {
   display: block !important;
   position: absolute !important;
-  inset: -50px !important;
-  background: radial-gradient(circle, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.2), transparent) !important;
-  opacity: 0.7 !important;
-  filter: blur(40px) !important;
+  inset: -60px !important;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.15), transparent) !important;
+  opacity: 0.8 !important;
+  filter: blur(50px) !important;
   z-index: 0 !important;
   border-radius: 50% !important;
   pointer-events: none !important;
 }
 
-/* SHOW inner pulsing ring */
-.profile-image-wrapper::before {
-  content: '' !important;
-  display: block !important;
-  position: absolute;
-  inset: -10px;
-  border-radius: 50%;
-  border: 2px solid rgba(139, 92, 246, 0.5);
-  pointer-events: none;
-  z-index: 1;
-  animation: pulse 3s ease-in-out infinite;
+/* Ensure profile info text is visible and properly positioned */
+.profile-info {
+  position: relative;
+  z-index: 5;
+  margin-top: 8px;
+  text-align: center;
 }
 
-/* Pulse animation */
-@keyframes pulse {
+.profile-info h3 {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  margin-bottom: 6px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.profile-info p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.profile-location {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--text-muted);
+  font-size: 0.875rem;
+  margin-top: 8px;
+}
+
+.profile-location i {
+  color: var(--accent-primary);
+}
+
+/* Pulse animation for inner ring */
+@keyframes pulse-ring {
   0%, 100% {
-    opacity: 0.4;
+    opacity: 0.3;
     transform: scale(1);
   }
   50% {
-    opacity: 0.8;
-    transform: scale(1.03);
+    opacity: 0.7;
+    transform: scale(1.04);
   }
 }
 
-/* Rotate animation */
+/* Rotate animation for outer ring */
 @keyframes rotate360 {
   from {
     transform: rotate(0deg);
@@ -494,18 +539,44 @@ a:focus-visible {
 
 /* Desktop adjustments */
 @media (min-width: 768px) {
-  .profile-image {
-    transform: scale(2);
-    object-position: center 40%;
+  .profile-image-wrapper {
+    width: 220px !important;
+    height: 220px !important;
+    margin-bottom: 28px !important;
   }
   
   .profile-ring {
-    inset: -25px !important;
-    border-width: 4px !important;
+    inset: -28px !important;
+    border-width: 3.5px !important;
+  }
+  
+  .profile-image-wrapper::before {
+    inset: -14px;
   }
   
   .profile-card {
-    padding: 45px !important;
+    padding: 48px 36px !important;
+  }
+  
+  .profile-info h3 {
+    font-size: 1.4rem;
+  }
+}
+
+/* Mobile adjustments */
+@media (max-width: 767px) {
+  .profile-image-wrapper {
+    width: 180px !important;
+    height: 180px !important;
+  }
+  
+  .profile-ring {
+    inset: -20px !important;
+    border-width: 2.5px !important;
+  }
+  
+  .profile-card {
+    padding: 32px 24px !important;
   }
 }
 
