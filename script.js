@@ -454,6 +454,58 @@
         document.querySelectorAll('[data-animate]').forEach(el => el.classList.add('animated'));
     }
 
+    // ===== CLICKABLE TIMELINE MILESTONES =====
+    const initTimelineMilestones = () => {
+        document.querySelectorAll('.milestone').forEach(m => {
+            m.addEventListener('click', () => {
+                const idx = parseInt(m.dataset.index, 10);
+                const items = document.querySelectorAll('.exp-item');
+                if (items[idx]) items[idx].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            });
+        });
+    };
+
+    // ===== PROJECT FILTERS =====
+    const initProjectFilters = () => {
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        const projectCards = document.querySelectorAll('.project-card');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const filter = btn.dataset.filter;
+                projectCards.forEach(card => {
+                    if (filter === 'all' || card.dataset.category.includes(filter)) {
+                        card.classList.remove('hidden');
+                    } else {
+                        card.classList.add('hidden');
+                    }
+                });
+            });
+        });
+    };
+
+    // ===== COPY EMAIL =====
+    const initCopyEmail = () => {
+        const copyBtn = document.getElementById('copyEmail');
+        if (!copyBtn) return;
+        copyBtn.addEventListener('click', async () => {
+            const email = 'digitalVamshidhar@gmail.com';
+            try {
+                await navigator.clipboard.writeText(email);
+                const icon = copyBtn.querySelector('.copy-btn i');
+                if (icon) {
+                    icon.className = 'fas fa-check';
+                    copyBtn.querySelector('.copy-btn').classList.add('copied');
+                    setTimeout(() => {
+                        icon.className = 'fas fa-copy';
+                        copyBtn.querySelector('.copy-btn').classList.remove('copied');
+                    }, 2000);
+                }
+            } catch { /* fallback */ }
+        });
+    };
+
     // ===== INIT ALL =====
     const init = () => {
         handleNavbarScroll();
@@ -468,6 +520,9 @@
         initParticles();
         initMagneticButtons();
         initTiltCards();
+        initTimelineMilestones();
+        initProjectFilters();
+        initCopyEmail();
     };
 
     const initAnimations = () => {

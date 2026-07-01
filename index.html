@@ -509,8 +509,14 @@
                 <h2 class="section-title">Built with <span class="gradient-text">Code &amp; Intelligence</span></h2>
                 <p class="section-desc">Real AI tools solving real marketing problems. Open source and production-ready.</p>
             </div>
+            <div class="project-filters">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="ai">AI</button>
+                <button class="filter-btn" data-filter="seo">SEO</button>
+                <button class="filter-btn" data-filter="tool">Tools</button>
+            </div>
             <div class="projects-grid">
-                <div class="project-card featured tilt-card" data-animate="fade-up" data-delay="0">
+                <div class="project-card featured tilt-card" data-category="ai seo" data-animate="fade-up" data-delay="0">
                     <div class="spotlight"></div>
                     <div class="project-header">
                         <div class="project-icon"><i class="fas fa-search"></i></div>
@@ -534,7 +540,7 @@
                         <span class="project-status live"><span class="status-dot"></span> Live on Google AI Studio</span>
                     </div>
                 </div>
-                <div class="project-card tilt-card" data-animate="fade-up" data-delay="150">
+                <div class="project-card tilt-card" data-category="ai tool" data-animate="fade-up" data-delay="150">
                     <div class="spotlight"></div>
                     <div class="project-header">
                         <div class="project-icon"><i class="fas fa-file-alt"></i></div>
@@ -556,7 +562,7 @@
                         <span class="project-status"><span class="status-dot"></span> Open Source</span>
                     </div>
                 </div>
-                <div class="project-card tilt-card" data-animate="fade-up" data-delay="300">
+                <div class="project-card tilt-card" data-category="ai security" data-animate="fade-up" data-delay="300">
                     <div class="spotlight"></div>
                     <div class="project-header">
                         <div class="project-icon"><i class="fas fa-shield-alt"></i></div>
@@ -1027,10 +1033,11 @@
                         <p>Ready to leverage AI for your marketing growth? Let's discuss how we can drive measurable results together.</p>
                     </div>
                     <div class="contact-details">
-                        <a href="mailto:digitalVamshidhar@gmail.com" class="contact-item magnetic-btn">
+                        <div class="contact-item magnetic-btn" id="copyEmail" role="button" tabindex="0">
                             <div class="contact-icon"><i class="fas fa-envelope"></i></div>
                             <div class="contact-text"><span class="label">Email</span><span class="value">digitalVamshidhar@gmail.com</span></div>
-                        </a>
+                            <button class="copy-btn" aria-label="Copy email"><i class="fas fa-copy"></i></button>
+                        </div>
                         <a href="tel:+917013122845" class="contact-item magnetic-btn">
                             <div class="contact-icon"><i class="fas fa-phone"></i></div>
                             <div class="contact-text"><span class="label">Phone</span><span class="value">+91-7013122845</span></div>
