@@ -18,6 +18,7 @@
     const loadingScreen = document.getElementById('loadingScreen');
     const loadingBarFill = document.getElementById('loadingBarFill');
     const particleCanvas = document.getElementById('particleCanvas');
+    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
 
     // ===== LOADING SCREEN =====
     const dismissLoading = () => {
@@ -485,27 +486,6 @@
         });
     };
 
-    // ===== COPY EMAIL =====
-    const initCopyEmail = () => {
-        const copyBtn = document.getElementById('copyEmail');
-        if (!copyBtn) return;
-        copyBtn.addEventListener('click', async () => {
-            const email = 'digitalVamshidhar@gmail.com';
-            try {
-                await navigator.clipboard.writeText(email);
-                const icon = copyBtn.querySelector('.copy-btn i');
-                if (icon) {
-                    icon.className = 'fas fa-check';
-                    copyBtn.querySelector('.copy-btn').classList.add('copied');
-                    setTimeout(() => {
-                        icon.className = 'fas fa-copy';
-                        copyBtn.querySelector('.copy-btn').classList.remove('copied');
-                    }, 2000);
-                }
-            } catch { /* fallback */ }
-        });
-    };
-
     // ===== INIT ALL =====
     const init = () => {
         handleNavbarScroll();
@@ -522,7 +502,6 @@
         initTiltCards();
         initTimelineMilestones();
         initProjectFilters();
-        initCopyEmail();
     };
 
     const initAnimations = () => {

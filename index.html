@@ -1033,11 +1033,11 @@
                         <p>Ready to leverage AI for your marketing growth? Let's discuss how we can drive measurable results together.</p>
                     </div>
                     <div class="contact-details">
-                        <div class="contact-item magnetic-btn" id="copyEmail" role="button" tabindex="0">
+                        <a href="mailto:digitalVamshidhar@gmail.com" class="contact-item magnetic-btn" id="copyEmail">
                             <div class="contact-icon"><i class="fas fa-envelope"></i></div>
                             <div class="contact-text"><span class="label">Email</span><span class="value">digitalVamshidhar@gmail.com</span></div>
-                            <button class="copy-btn" aria-label="Copy email"><i class="fas fa-copy"></i></button>
-                        </div>
+                            <button class="copy-btn" aria-label="Copy email" onclick="event.preventDefault();event.stopPropagation();navigator.clipboard.writeText('digitalVamshidhar@gmail.com').then(()=>{let i=this.querySelector('i');if(i){i.className='fas fa-check';this.classList.add('copied');setTimeout(()=>{i.className='fas fa-copy';this.classList.remove('copied')},2000)}}).catch(()=>{})"><i class="fas fa-copy"></i></button>
+                        </a>
                         <a href="tel:+917013122845" class="contact-item magnetic-btn">
                             <div class="contact-icon"><i class="fas fa-phone"></i></div>
                             <div class="contact-text"><span class="label">Phone</span><span class="value">+91-7013122845</span></div>
