@@ -412,7 +412,6 @@ a:focus-visible {
   height: 100% !important;
   object-fit: cover;
   object-position: center;
-  transform: scale(1.2);
   border-radius: 50% !important;
   background: transparent;
   display: block;
@@ -423,7 +422,7 @@ a:focus-visible {
 }
 
 .profile-image:hover {
-  transform: scale(1.23);
+  transform: scale(1.05);
   box-shadow: 0 25px 70px rgba(99, 102, 241, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.2);
   filter: brightness(1.08) contrast(1.12) saturate(1.08);
 }
