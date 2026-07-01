@@ -84,23 +84,6 @@
   window.showToast = showToast;
 
   /* ════════════════════════════════════════════════════════
-     3. SKIP TO CONTENT LINK
-     ════════════════════════════════════════════════════════ */
-  function addSkipLink() {
-    const skipLink = document.createElement('a');
-    skipLink.href = '#main-content';
-    skipLink.className = 'skip-to-content';
-    skipLink.textContent = 'Skip to main content';
-    document.body.insertBefore(skipLink, document.body.firstChild);
-    
-    const mainContent = document.querySelector('main, [role="main"]') || 
-                       document.querySelector('section');
-    if (mainContent && !mainContent.id) {
-      mainContent.id = 'main-content';
-    }
-  }
-
-  /* ════════════════════════════════════════════════════════
      4. ENHANCED IMAGE OPTIMIZATION
      ════════════════════════════════════════════════════════ */
   function optimizeImages() {
@@ -176,7 +159,6 @@
       return;
     }
     
-    addSkipLink();
     initLazyLoading();
     optimizeImages();
     enhanceKeyboardNav();
