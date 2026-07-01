@@ -215,6 +215,16 @@
 
 /* ===== ENHANCED FOOTER LINKS ===== */
 .footer-links a { color: var(--text-secondary); font-size: 0.9rem; font-weight: 500; transition: color var(--transition-fast); position: relative; }
+.footer-logo .logo-text {
+    font-family: var(--font-display);
+    font-size: 1.2rem;
+    font-weight: 700;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
 .footer-links a::after { content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 2px; background: var(--accent-gradient); transition: width 0.3s ease; }
 .footer-links a:hover { color: var(--accent-primary); }
 .footer-links a:hover::after { width: 100%; }
