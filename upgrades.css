@@ -411,7 +411,7 @@ a:focus-visible {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover;
-  object-position: center 35%;
+  object-position: center;
   transform: scale(1.55);
   border-radius: 50% !important;
   background: transparent;
@@ -586,7 +586,6 @@ a:focus-visible {
   
   .profile-image {
     transform: scale(1.6);
-    object-position: center 32%;
   }
   
   .profile-ring {
@@ -618,7 +617,6 @@ a:focus-visible {
   
   .profile-image {
     transform: scale(1.5);
-    object-position: center 38%;
   }
   
   .profile-ring {
