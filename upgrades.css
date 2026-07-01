@@ -411,8 +411,7 @@ a:focus-visible {
   width: 100% !important;
   height: 100% !important;
   object-fit: cover;
-  object-position: center 35%;
-  transform: scale(1.55);
+  object-position: center 25%;
   border-radius: 50% !important;
   background: transparent;
   display: block;
@@ -424,7 +423,7 @@ a:focus-visible {
 }
 
 .profile-image:hover {
-  transform: scale(1.58);
+  transform: scale(1.03);
   box-shadow: 0 25px 70px rgba(99, 102, 241, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.2);
   filter: brightness(1.08) contrast(1.12) saturate(1.08);
 }
@@ -581,8 +580,7 @@ a:focus-visible {
   }
   
   .profile-image {
-    transform: scale(1.6);
-    object-position: center 32%;
+    object-position: center 25%;
   }
   
   .profile-ring {
@@ -611,8 +609,7 @@ a:focus-visible {
   }
   
   .profile-image {
-    transform: scale(1.5);
-    object-position: center 38%;
+    object-position: center 25%;
   }
   
   .profile-ring {
