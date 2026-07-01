@@ -114,114 +114,10 @@
   }
 
   /* ════════════════════════════════════════════════════════
-     4. LIVE GITHUB METRICS
+     4. LIVE GITHUB METRICS - REMOVED (Already implemented in enhancements.js)
      ════════════════════════════════════════════════════════ */
-  async function fetchGitHubMetrics() {
-    const username = 'mvamshi56';
-    const repos = ['seoagent', 'AI-Web-Summarizer', 'AI-SECURITY', 'portfolio'];
-    
-    try {
-      // Fetch user data
-      const userResponse = await fetch(`https://api.github.com/users/${username}`);
-      const userData = await userResponse.json();
-      
-      // Fetch recent commits across repos
-      const repoPromises = repos.map(repo => 
-        fetch(`https://api.github.com/repos/${username}/${repo}/commits?per_page=1`)
-          .then(r => r.json())
-          .catch(() => [])
-      );
-      
-      const repoCommits = await Promise.all(repoPromises);
-      const latestCommit = repoCommits
-        .filter(commits => commits.length > 0)
-        .map(commits => new Date(commits[0].commit.author.date))
-        .sort((a, b) => b - a)[0];
-      
-      return {
-        publicRepos: userData.public_repos,
-        followers: userData.followers,
-        totalStars: await getTotalStars(username),
-        lastCommit: latestCommit ? getTimeAgo(latestCommit) : 'Recently',
-        profileUrl: userData.html_url
-      };
-    } catch (error) {
-      console.error('Error fetching GitHub metrics:', error);
-      return null;
-    }
-  }
-  
-  async function getTotalStars(username) {
-    try {
-      const response = await fetch(`https://api.github.com/users/${username}/repos?per_page=100`);
-      const repos = await response.json();
-      return repos.reduce((total, repo) => total + repo.stargazers_count, 0);
-    } catch {
-      return 0;
-    }
-  }
-  
-  function getTimeAgo(date) {
-    const seconds = Math.floor((new Date() - date) / 1000);
-    
-    const intervals = {
-      year: 31536000,
-      month: 2592000,
-      week: 604800,
-      day: 86400,
-      hour: 3600,
-      minute: 60
-    };
-    
-    for (const [unit, secondsInUnit] of Object.entries(intervals)) {
-      const interval = Math.floor(seconds / secondsInUnit);
-      if (interval >= 1) {
-        return `${interval}${unit.charAt(0)} ago`;
-      }
-    }
-    
-    return 'just now';
-  }
-  
-  function displayLiveMetrics(metrics) {
-    if (!metrics) return;
-    
-    // Find the GitHub stats section (look for element with GitHub links)
-    const githubSection = document.querySelector('[href*="github.com/mvamshi56"]')?.closest('section');
-    if (!githubSection) return;
-    
-    const metricsContainer = document.createElement('div');
-    metricsContainer.className = 'live-metrics-container';
-    metricsContainer.innerHTML = `
-      <a href="${metrics.profileUrl}" target="_blank" rel="noopener" class="live-badge">
-        <span class="live-badge-pulse"></span>
-        <i class="fab fa-github live-badge-icon"></i>
-        <span class="live-badge-value">${metrics.publicRepos}</span>
-        <span>Repos</span>
-      </a>
-      <div class="live-badge">
-        <i class="fas fa-star live-badge-icon"></i>
-        <span class="live-badge-value">${metrics.totalStars}</span>
-        <span>Stars</span>
-      </div>
-      <div class="live-badge">
-        <i class="fas fa-code-branch live-badge-icon"></i>
-        <span>Last commit</span>
-        <span class="live-badge-value">${metrics.lastCommit}</span>
-      </div>
-      <div class="live-badge">
-        <i class="fas fa-users live-badge-icon"></i>
-        <span class="live-badge-value">${metrics.followers}</span>
-        <span>Followers</span>
-      </div>
-    `;
-    
-    // Insert after the heading in the section
-    const heading = githubSection.querySelector('h2, h3');
-    if (heading) {
-      heading.after(metricsContainer);
-    }
-  }
+  // GitHub metrics are already perfectly implemented in your existing code.
+  // No need to duplicate this functionality.
 
   /* ════════════════════════════════════════════════════════
      5. TOAST NOTIFICATIONS
@@ -410,21 +306,16 @@
     logPerformanceMetrics();
     validateStructuredData();
     
-    // Fetch and display live GitHub metrics
-    fetchGitHubMetrics().then(metrics => {
-      if (metrics) {
-        displayLiveMetrics(metrics);
-        console.log('✅ GitHub metrics loaded');
-      }
-    });
+    // GitHub metrics already implemented in enhancements.js
+    // No need to fetch again
     
     console.log('✅ Portfolio Upgrades 2026 - Ready!');
     
-    // Show welcome toast
+    // Show welcome toast (optional - can be disabled)
     setTimeout(() => {
       showToast(
         'Enhanced Portfolio',
-        'New features: Dark mode, live GitHub stats, and more!',
+        'Dark mode toggle and accessibility improvements active!',
         'info',
         4000
       );
