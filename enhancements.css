@@ -533,12 +533,13 @@
   letter-spacing: 0.03em;
 }
 
-@media (max-width: 480px) {
+@media (max-width: 600px) {
   .ai-chat-panel {
-    width: calc(100vw - 32px);
-    right: 16px;
+    right: 12px;
+    left: 12px;
+    width: auto;
     bottom: 140px;
-    max-height: calc(100vh - 200px);
+    max-height: calc(100vh - 190px);
   }
   .ai-chat-beacon { right: 16px; }
 
