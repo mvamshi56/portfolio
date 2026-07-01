@@ -17,76 +17,16 @@
     const profileFallback = document.getElementById('profileFallback');
     const loadingScreen = document.getElementById('loadingScreen');
     const loadingBarFill = document.getElementById('loadingBarFill');
-    const cursorDot = document.getElementById('cursorDot');
-    const cursorRing = document.getElementById('cursorRing');
     const particleCanvas = document.getElementById('particleCanvas');
 
     // ===== LOADING SCREEN =====
-    const simulateLoading = () => {
-        let progress = 0;
-        const interval = setInterval(() => {
-            progress += Math.random() * 25 + 15;
-            if (progress >= 100) {
-                progress = 100;
-                clearInterval(interval);
-                if (loadingBarFill) loadingBarFill.style.width = '100%';
-                setTimeout(() => {
-                    if (loadingScreen) loadingScreen.classList.add('hidden');
-                    initAnimations();
-                }, 200);
-            } else {
-                if (loadingBarFill) loadingBarFill.style.width = progress + '%';
-            }
-        }, 60);
+    const dismissLoading = () => {
+        if (loadingBarFill) loadingBarFill.style.width = '100%';
+        setTimeout(() => {
+            if (loadingScreen) loadingScreen.classList.add('hidden');
+            initAnimations();
+        }, 100);
     };
-
-    // ===== CUSTOM CURSOR =====
-    let mouseX = 0, mouseY = 0, ringX = 0, ringY = 0;
-    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
-
-    if (!isTouchDevice && cursorDot && cursorRing) {
-        let cursorStarted = false;
-
-        document.addEventListener('mousemove', (e) => {
-            mouseX = e.clientX;
-            mouseY = e.clientY;
-            cursorDot.style.left = mouseX + 'px';
-            cursorDot.style.top = mouseY + 'px';
-
-            if (!cursorStarted) {
-                // First real mouse position we've seen — snap the ring straight
-                // to it (instead of lerping in from the stale 0,0 origin) and
-                // reveal both elements now that they have a real position.
-                cursorStarted = true;
-                ringX = mouseX;
-                ringY = mouseY;
-                cursorDot.classList.add('active');
-                cursorRing.classList.add('active');
-            }
-        });
-
-        const animateRing = () => {
-            ringX += (mouseX - ringX) * 0.15;
-            ringY += (mouseY - ringY) * 0.15;
-            cursorRing.style.left = ringX + 'px';
-            cursorRing.style.top = ringY + 'px';
-            requestAnimationFrame(animateRing);
-        };
-        animateRing();
-
-        // Hover effects on interactive elements
-        const interactiveElements = document.querySelectorAll('a, button, .project-link, .social-link, .social-btn, .magnetic-btn');
-        interactiveElements.forEach(el => {
-            el.addEventListener('mouseenter', () => {
-                cursorDot.classList.add('hovering');
-                cursorRing.classList.add('hovering');
-            });
-            el.addEventListener('mouseleave', () => {
-                cursorDot.classList.remove('hovering');
-                cursorRing.classList.remove('hovering');
-            });
-        });
-    }
 
     // ===== PARTICLE SYSTEM =====
     const initParticles = () => {
@@ -541,11 +481,11 @@
 
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => {
-            simulateLoading();
+            dismissLoading();
             init();
         });
     } else {
-        simulateLoading();
+        dismissLoading();
         init();
     }
 

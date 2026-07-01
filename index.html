@@ -4,11 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-    <!-- Cache control: HTML always fetches fresh -->
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
-
     <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
     <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 
@@ -78,17 +73,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    
-        <!-- Auto cache-busting for local CSS (fresh on every load) -->
-    <script>
-      (function() {
-        var v = '?v=' + Date.now();
-        window.__cacheBust = v;
-        document.write('<link rel="stylesheet" href="style.css' + v + '">');
-        document.write('<link rel="stylesheet" href="enhancements.css' + v + '">');
-        document.write('<link rel="stylesheet" href="upgrades.css' + v + '">');
-      })();
-    </script>
+    <link rel="stylesheet" href="style.css?v=1.1">
+    <link rel="stylesheet" href="enhancements.css?v=1.1">
+    <link rel="stylesheet" href="upgrades.css?v=1.1">
 
     <!-- SEO Enhancements: Additional Structured Data -->
     <script type="application/ld+json">
@@ -210,14 +197,10 @@
         </div>
     </div>
 
-    <!-- Custom Cursor -->
-    <div class="cursor-dot" id="cursorDot"></div>
-    <div class="cursor-ring" id="cursorRing"></div>
-
     <!-- Noise Overlay -->
     <div class="noise-overlay" id="noiseOverlay"></div>
 
-    <a href="#home" class="skip-link">Skip to main content</a>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <div class="scroll-progress" id="scrollProgress"></div>
 
@@ -314,6 +297,7 @@
     </nav>
 
     <!-- Hero Section -->
+    <main id="main-content" role="main">
     <section id="home" class="hero" data-animate="fade-up">
         <div class="hero-bg">
             <div class="gradient-orb orb-1"></div>
@@ -329,8 +313,9 @@
                 </div>
                 <h1 class="hero-title" data-animate="split-text" data-delay="400">
                     <span class="title-line">Hi, I'm <span class="highlight">Vamshidhar Reddy M</span></span>
-                    <span class="title-line typewriter" id="typewriter" aria-hidden="true"></span>
                 </h1>
+                <p class="hero-title-fallback visually-hidden">AI-Powered Digital Marketing Specialist</p>
+                <span class="title-line typewriter" id="typewriter" aria-hidden="true"></span>
                 <p class="hero-subtitle" data-animate="fade-up" data-delay="600">
                     AI-Powered Digital Marketing Specialist bridging the gap between traditional marketing
                     and intelligent automation. I build AI tools that drive real business growth.
@@ -361,7 +346,7 @@
             <div class="hero-visual" data-animate="fade-left" data-delay="600">
                 <div class="profile-card tilt-card">
                     <div class="profile-image-wrapper">
-                        <img src="assets/vamshi.png" alt="Vamshidhar Reddy M" class="profile-image" id="profileImage" width="200" height="200" onerror="this.style.display='none'; document.getElementById('profileFallback').style.display='flex';">
+                        <img src="assets/vamshi.png" alt="Vamshidhar Reddy M" class="profile-image" id="profileImage" width="200" height="200" fetchpriority="high" onerror="this.style.display='none'; document.getElementById('profileFallback').style.display='flex';">
                         <div class="profile-fallback" id="profileFallback"><span>VR</span></div>
                         <div class="profile-glow"></div>
                     </div>
@@ -995,7 +980,10 @@
                     </div>
                 </div>
                 <div class="skills-radar-wrapper">
-                    <img src="assets/skills_radar.png" alt="Skills Proficiency Radar Chart" class="skills-radar-img" width="1840" height="1489" loading="lazy">
+                    <picture>
+                        <source srcset="assets/skills_radar.webp" type="image/webp">
+                        <img src="assets/skills_radar.png" alt="Skills Proficiency Radar Chart" class="skills-radar-img" width="600" height="486" loading="lazy">
+                    </picture>
                     <div class="radar-overlay">
                         <div class="radar-stat tilt-card"><span class="radar-stat-value">95%</span><span class="radar-stat-label">SEO Mastery</span></div>
                         <div class="radar-stat tilt-card"><span class="radar-stat-value">90%</span><span class="radar-stat-label">Paid Media</span></div>
@@ -1068,6 +1056,7 @@
             </div>
         </div>
     </section>
+    </main>
 
     <!-- Footer -->
     <footer class="footer">
@@ -1147,15 +1136,9 @@
 
     <button class="back-to-top" id="backToTop" aria-label="Back to top"><i class="fas fa-arrow-up"></i></button>
 
-    <!-- Auto cache-busting for local JS (same cache key as CSS in <head>) -->
-    <script>
-      (function() {
-        var v = window.__cacheBust || ('?v=' + Math.floor(Date.now() / 60000));
-        document.write('<script src="script.js' + v + '"><\/script>');
-        document.write('<script src="enhancements.js' + v + '"><\/script>');
-        document.write('<script src="seo-audit.js' + v + '"><\/script>');
-        document.write('<script src="upgrades.js' + v + '"><\/script>');
-      })();
-    </script>
+    <script src="script.js?v=1.1"></script>
+    <script src="enhancements.js?v=1.1"></script>
+    <script src="seo-audit.js?v=1.1"></script>
+    <script src="upgrades.js?v=1.1"></script>
 </body>
 </html>

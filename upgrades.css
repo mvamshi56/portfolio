@@ -181,19 +181,8 @@ a:focus-visible {
   outline-offset: 2px;
 }
 
-/* Reduced motion support */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-
 /* ───────────────────────────────────────────
-   5. LOADING STATES
+    5. LOADING STATES
    ─────────────────────────────────────────── */
 .loading-spinner {
   display: inline-block;
