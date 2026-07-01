@@ -429,7 +429,7 @@ a:focus-visible {
   filter: brightness(1.08) contrast(1.12) saturate(1.08);
 }
 
-/* Image wrapper - circular container with gradient overlay */
+/* Image wrapper - circular container with gradient overlay for PNG with transparent background */
 .profile-image-wrapper {
   position: relative;
   width: 200px !important;
@@ -440,19 +440,18 @@ a:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.1));
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.15));
 }
 
-/* Add a subtle vignette effect to blend the background */
+/* Subtle glow for transparent background images */
 .profile-image-wrapper::after {
   content: '';
   position: absolute;
   inset: 0;
   border-radius: 50%;
-  background: radial-gradient(circle, transparent 45%, rgba(99, 102, 241, 0.3) 100%);
+  background: radial-gradient(circle, transparent 40%, rgba(99, 102, 241, 0.15) 100%);
   pointer-events: none;
   z-index: 2;
-  mix-blend-mode: multiply;
 }
 
 /* Allow space for decorative rings around the image */
