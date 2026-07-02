@@ -785,7 +785,8 @@ html.theme-transitioning .progress-ring-fill {
 
 /* ===== ARTICLES ===== */
 .articles { padding: 100px 0; background: var(--bg-secondary); }
-.articles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+.articles-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; min-height: 200px; }
+.articles-error { grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px 0; }
 .article-card { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-xl); padding: 24px; transition: all var(--transition-fast); display: flex; flex-direction: column; }
 .article-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-xl); border-color: var(--accent-primary); }
 .article-card-icon { width: 40px; height: 40px; border-radius: var(--radius-md); background: rgba(0, 119, 181, 0.12); display: flex; align-items: center; justify-content: center; color: #0077b5; font-size: 1.1rem; margin-bottom: 14px; }

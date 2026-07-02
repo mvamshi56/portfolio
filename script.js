@@ -608,6 +608,47 @@
         initProjectFilters();
         initCaseStudies();
         initTestimonials();
+        initArticles();
+    };
+
+    const initArticles = () => {
+        const container = document.getElementById('articles-container');
+        if (!container) return;
+        fetch('articles.json')
+            .then(r => { if (!r.ok) throw new Error('Failed to load'); return r.json(); })
+            .then(articles => {
+                container.innerHTML = '';
+                articles.forEach((a, i) => {
+                    const card = document.createElement('div');
+                    card.className = 'article-card';
+                    card.setAttribute('data-animate', 'fade-up');
+                    card.setAttribute('data-delay', i * 100);
+                    card.innerHTML = `
+                        <div class="article-card-icon"><i class="fab fa-linkedin-in"></i></div>
+                        <p class="article-meta">${a.date} · ${a.readTime}</p>
+                        <h3>${a.title}</h3>
+                        <p>${a.description}</p>
+                        <a href="${a.url}" target="_blank" rel="noopener noreferrer" class="article-link">Read on LinkedIn <i class="fas fa-arrow-right"></i></a>
+                    `;
+                    container.appendChild(card);
+                });
+                // Register new cards with scroll observer
+                container.querySelectorAll('[data-animate]').forEach(el => {
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(entry => {
+                            if (entry.isIntersecting) {
+                                const delay = entry.target.dataset.delay || 0;
+                                setTimeout(() => entry.target.classList.add('animated'), parseInt(delay, 10));
+                                observer.unobserve(entry.target);
+                            }
+                        });
+                    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+                    observer.observe(el);
+                });
+            })
+            .catch(() => {
+                container.innerHTML = '<p class="articles-error">Unable to load articles.</p>';
+            });
     };
 
     const initAnimations = () => {
