@@ -1,0 +1,26 @@
+[
+  {
+    "id": "ai-tools-picking",
+    "title": "Stop asking 'Which AI is the best?' Start asking 'Best at what?'",
+    "description": "I run 6 different AI models in my daily workflow — each for a specific job. Here's why picking the right tool matters more than picking the 'best' tool.",
+    "date": "Jan 20, 2026",
+    "readTime": "3 min read",
+    "content": "<p>Every week someone asks me: <em>'Which AI model should I use?'</em></p><p>The honest answer? It depends on what you're trying to do. I stopped chasing the 'best' model a long time ago. Instead, I match the tool to the task.</p><h3>My current stack</h3><p><strong>Claude</strong> — Long-form content, strategy docs, code architecture. Handles 100K+ token contexts without losing coherence.</p><p><strong>ChatGPT</strong> — Quick drafts, ad copy variations, brainstorming sessions. Fast and good enough for first passes.</p><p><strong>Gemini</strong> — SEO analysis, Google-specific content. It understands search intent better than any other model I've tested.</p><p><strong>Perplexity</strong> — Research. Links sources, gives me real citations I can verify instead of hallucinated references.</p><p><strong>Cursor</strong> — Code generation and debugging. Context-aware across my entire codebase.</p><p><strong>Midjourney</strong> — Visual assets, social media graphics, blog headers.</p><h3>The takeaway</h3><p>Stop asking which AI is the best. Start asking: <em>'What am I trying to build, and which tool fits that job?'</em> That shift alone changed how I work.</p>"
+  },
+  {
+    "id": "geo-aeo-ai",
+    "title": "Google ranking was the game. AI recommendation is the new game.",
+    "description": "Most websites aren't even on the field yet. Here's what AEO and GEO mean for your visibility strategy.",
+    "date": "Jan 18, 2026",
+    "readTime": "4 min read",
+    "content": "<p>You've heard the terms: AEO (Answer Engine Optimization) and GEO (Generative Engine Optimization). They're not buzzwords — they're the next frontier of search.</p><p>When someone asks ChatGPT or Gemini a question, it doesn't show a list of 10 blue links. It synthesizes an answer from multiple sources. If your content isn't structured for this, you're invisible.</p><h3>What changes</h3><p><strong>Traditional SEO:</strong> Rank #1 for a keyword → get 30% of clicks.</p><p><strong>AI-driven visibility:</strong> Get cited by 3 AI models → get referenced in 80% of relevant answers.</p><h3>How to prepare</h3><ul><li>Write clear definitions. If your page answers 'What is X?' clearly, AI models will cite it.</li><li>Use structured data. Schema markup helps AI understand your content.</li><li>Build topical authority. Publish multiple pieces on related topics — AI models trust depth.</li><li>Optimize for conversational queries. People ask AI full sentences, not keywords.</li></ul><p>The playbook is being rewritten. The good news? Most competitors aren't playing the new game yet.</p>"
+  },
+  {
+    "id": "llms-txt-explained",
+    "title": "Nobody explained LLMs.txt properly. So let me do it in plain English.",
+    "description": "You know how robots.txt tells Google which pages to crawl — LLMs.txt does the same for AI models.",
+    "date": "Jan 15, 2026",
+    "readTime": "5 min read",
+    "content": "<p>You know <code>robots.txt</code> — the file that tells search engines which pages they can and can't crawl. <code>LLMs.txt</code> does the same thing for AI models.</p><p>It's a text file you place at the root of your domain. Inside, you define which content AI models can use for training and inference — and what they should ignore.</p><h3>Why it matters</h3><p>AI models scrape the web to train. Without an <code>LLMs.txt</code> file, you're giving them blanket permission by default. If you have proprietary content, pricing pages, or client data behind login walls, this matters.</p><h3>Basic syntax</h3><pre><code>User-agent: GPTBot\nDisallow: /dashboard/\nDisallow: /pricing/\n\nUser-agent: Claude-Web\nAllow: /blog/\nDisallow: /private/</code></pre><h3>What every marketer should do</h3><ul><li>Create an <code>LLMs.txt</code> file at the root of your domain.</li><li>Allow your blog and public resources.</li><li>Disallow pricing pages, internal tools, and draft content.</li><li>Review it quarterly as new AI crawlers emerge.</li></ul><p>Think of it as the new <code>robots.txt</code>. Ignore it at your own risk.</p>"
+  }
+]
