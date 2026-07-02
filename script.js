@@ -499,13 +499,33 @@
 
     // ===== CASE STUDY TOGGLE =====
     const initCaseStudies = () => {
-        document.querySelectorAll('.case-toggle').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const card = btn.closest('.case-card');
-                card.classList.toggle('open');
-                btn.querySelector('.case-toggle-text').textContent = 
-                    card.classList.contains('open') ? 'Hide Details' : 'View Details';
+        const allCards = document.querySelectorAll('.case-card');
+        const closeAll = (except) => {
+            allCards.forEach(c => {
+                if (c !== except) c.classList.remove('open');
             });
+        };
+        document.querySelectorAll('.case-toggle').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const card = btn.closest('.case-card');
+                const wasOpen = card.classList.contains('open');
+                closeAll(card);
+                if (!wasOpen) {
+                    card.classList.add('open');
+                    btn.querySelector('.case-toggle-text').textContent = 'Hide Details';
+                } else {
+                    btn.querySelector('.case-toggle-text').textContent = 'View Details';
+                }
+            });
+        });
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.case-card')) {
+                allCards.forEach(c => {
+                    c.classList.remove('open');
+                    c.querySelector('.case-toggle-text').textContent = 'View Details';
+                });
+            }
         });
     };
 
