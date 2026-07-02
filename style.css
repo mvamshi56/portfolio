@@ -1128,7 +1128,9 @@ html.theme-transitioning .progress-ring-fill {
 ::-webkit-scrollbar-thumb { background: var(--accent-gradient); border-radius: var(--radius-full); }
 ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
 
-a:focus-visible, button:focus-visible { outline: 2px solid var(--accent-primary); outline-offset: 4px; border-radius: var(--radius-sm); }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--accent-primary); outline-offset: 2px; border-radius: var(--radius-sm); }
+a:focus:not(:focus-visible) { outline: none; }
+.filter-btn:focus-visible, .testimonial-dot:focus-visible { outline: 3px solid var(--accent-primary); outline-offset: 2px; }
 
 @media print {
     .navbar, .floating-cards, .scroll-indicator, .back-to-top, .hero-bg, .theme-toggle, .nav-toggle, .scroll-progress, .noise-overlay { display: none !important; }
