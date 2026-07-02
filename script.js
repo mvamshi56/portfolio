@@ -613,6 +613,8 @@
         cards.forEach((_, i) => {
             const dot = document.createElement('button');
             dot.className = 'testimonial-dot' + (i === 0 ? ' active' : '');
+            dot.setAttribute('aria-label', 'Go to testimonial ' + (i + 1));
+            if (i === 0) dot.setAttribute('aria-current', 'true');
             dot.addEventListener('click', () => goTo(i));
             dotsContainer.appendChild(dot);
         });
@@ -622,7 +624,11 @@
         const goTo = (index) => {
             current = index;
             track.scrollTo({ left: track.offsetWidth * index, behavior: 'smooth' });
-            dots.forEach((d, i) => d.classList.toggle('active', i === current));
+            dots.forEach((d, i) => {
+                d.classList.toggle('active', i === current);
+                if (i === current) d.setAttribute('aria-current', 'true');
+                else d.removeAttribute('aria-current');
+            });
         };
 
         document.querySelector('.testimonial-arrow.next')?.addEventListener('click', () => {
