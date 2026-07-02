@@ -502,7 +502,14 @@
         const allCards = document.querySelectorAll('.case-card');
         const closeAll = (except) => {
             allCards.forEach(c => {
-                if (c !== except) c.classList.remove('open');
+                if (c !== except) {
+                    c.classList.remove('open');
+                    const txt = c.querySelector('.case-toggle-text');
+                    if (txt) txt.textContent = 'View Details';
+                }
+            });
+            document.querySelectorAll('.result-bar-fill').forEach(bar => {
+                bar.style.width = '0%';
             });
         };
         const animateBars = (card) => {
@@ -511,24 +518,22 @@
                 if (pct) bar.style.width = pct;
             });
         };
-        const resetBars = () => {
-            document.querySelectorAll('.result-bar-fill').forEach(bar => {
-                bar.style.width = '0%';
-            });
-        };
         document.querySelectorAll('.case-toggle').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const card = btn.closest('.case-card');
                 const wasOpen = card.classList.contains('open');
-                closeAll(card);
-                if (!wasOpen) {
+                if (wasOpen) {
+                    card.classList.remove('open');
+                    btn.querySelector('.case-toggle-text').textContent = 'View Details';
+                    card.querySelectorAll('.result-bar-fill').forEach(bar => {
+                        bar.style.width = '0%';
+                    });
+                } else {
+                    closeAll(card);
                     card.classList.add('open');
                     btn.querySelector('.case-toggle-text').textContent = 'Hide Details';
                     setTimeout(() => animateBars(card), 100);
-                } else {
-                    btn.querySelector('.case-toggle-text').textContent = 'View Details';
-                    resetBars();
                 }
             });
         });
@@ -536,9 +541,12 @@
             if (!e.target.closest('.case-card')) {
                 allCards.forEach(c => {
                     c.classList.remove('open');
-                    c.querySelector('.case-toggle-text').textContent = 'View Details';
+                    const txt = c.querySelector('.case-toggle-text');
+                    if (txt) txt.textContent = 'View Details';
                 });
-                resetBars();
+                document.querySelectorAll('.result-bar-fill').forEach(bar => {
+                    bar.style.width = '0%';
+                });
             }
         });
     };
