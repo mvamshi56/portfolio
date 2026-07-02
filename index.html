@@ -332,7 +332,7 @@
                     <a href="resume/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary magnetic-btn">
                         <i class="fas fa-eye"></i> View Resume
                     </a>
-                    <a href="resume/" target="_blank" rel="noopener noreferrer" class="btn btn-secondary magnetic-btn">
+                    <a href="assets/Vamshidhar_Reddy_M_Resume.pdf" target="_blank" rel="noopener noreferrer" class="btn btn-secondary magnetic-btn">
                         <i class="fas fa-download"></i> Download CV
                     </a>
                 </div>
@@ -606,10 +606,10 @@
                 <p class="section-desc">Real AI tools solving real marketing problems. Open source and production-ready.</p>
             </div>
             <div class="project-filters">
-                <button class="filter-btn active" data-filter="all">All</button>
-                <button class="filter-btn" data-filter="ai">AI</button>
-                <button class="filter-btn" data-filter="seo">SEO</button>
-                <button class="filter-btn" data-filter="tool">Tools</button>
+                <button class="filter-btn active" data-filter="all" aria-pressed="true">All</button>
+                <button class="filter-btn" data-filter="ai" aria-pressed="false">AI</button>
+                <button class="filter-btn" data-filter="seo" aria-pressed="false">SEO</button>
+                <button class="filter-btn" data-filter="tool" aria-pressed="false">Tools</button>
             </div>
             <div class="projects-grid">
                 <div class="project-card featured tilt-card" data-category="ai seo" data-animate="fade-up" data-delay="0">
@@ -1273,7 +1273,11 @@
                 <p class="section-desc">Insights on AI marketing, SEO, and digital strategy — published on LinkedIn.</p>
             </div>
             <div class="articles-grid" id="articles-container">
-                <!-- Articles loaded dynamically from articles.json -->
+                <div class="articles-skeleton" id="articlesSkeleton">
+                    <div class="article-skeleton-card"><div class="sk-icon"></div><div class="sk-meta"></div><div class="sk-line"></div><div class="sk-line"></div><div class="sk-line"></div></div>
+                    <div class="article-skeleton-card"><div class="sk-icon"></div><div class="sk-meta"></div><div class="sk-line"></div><div class="sk-line"></div><div class="sk-line"></div></div>
+                    <div class="article-skeleton-card"><div class="sk-icon"></div><div class="sk-meta"></div><div class="sk-line"></div><div class="sk-line"></div><div class="sk-line"></div></div>
+                </div>
             </div>
         </div>
     </section>
@@ -1296,7 +1300,7 @@
                             <div class="testimonial-info">
                                 <strong>S. Kumar</strong>
                             </div>
-                            <a href="#" class="testimonial-linkedin" aria-label="View on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <span class="testimonial-linkedin" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></span>
                         </div>
                     </div>
                     <div class="testimonial-card">
@@ -1307,7 +1311,7 @@
                             <div class="testimonial-info">
                                 <strong>R. Prasad</strong>
                             </div>
-                            <a href="#" class="testimonial-linkedin" aria-label="View on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <span class="testimonial-linkedin" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></span>
                         </div>
                     </div>
                     <div class="testimonial-card">
@@ -1318,7 +1322,7 @@
                             <div class="testimonial-info">
                                 <strong>A. Mehta</strong>
                             </div>
-                            <a href="#" class="testimonial-linkedin" aria-label="View on LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                            <span class="testimonial-linkedin" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></span>
                         </div>
                     </div>
                 </div>

@@ -230,6 +230,7 @@
             navToggle.setAttribute('aria-expanded', 'false');
         }
         if (navMenu) navMenu.classList.remove('active');
+        document.body.style.overflow = '';
     };
 
     const toggleMobileNav = () => {
@@ -237,6 +238,7 @@
         navToggle.classList.toggle('active');
         navMenu.classList.toggle('active');
         navToggle.setAttribute('aria-expanded', String(!expanded));
+        document.body.style.overflow = expanded ? '' : 'hidden';
         // Focus first nav link when opening
         if (!expanded) {
             const firstLink = navMenu.querySelector('.nav-link');
@@ -530,8 +532,12 @@
         const projectCards = document.querySelectorAll('.project-card');
         filterBtns.forEach(btn => {
             btn.addEventListener('click', () => {
-                filterBtns.forEach(b => b.classList.remove('active'));
+                filterBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-pressed', 'false');
+                });
                 btn.classList.add('active');
+                btn.setAttribute('aria-pressed', 'true');
                 const filter = btn.dataset.filter;
                 projectCards.forEach(card => {
                     if (filter === 'all' || card.dataset.category.includes(filter)) {
@@ -542,6 +548,8 @@
                 });
             });
         });
+        // Set initial aria-pressed
+        filterBtns.forEach(b => b.setAttribute('aria-pressed', b.classList.contains('active') ? 'true' : 'false'));
     };
 
     // ===== CASE STUDY TOGGLE =====
@@ -660,10 +668,12 @@
 
     const initArticles = () => {
         const container = document.getElementById('articles-container');
+        const skeleton = document.getElementById('articlesSkeleton');
         if (!container) return;
         fetch('articles.json')
             .then(r => { if (!r.ok) throw new Error('Failed to load'); return r.json(); })
             .then(articles => {
+                if (skeleton) skeleton.remove();
                 container.innerHTML = '';
                 articles.forEach((a, i) => {
                     const card = document.createElement('div');
