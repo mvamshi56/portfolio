@@ -1,0 +1,8 @@
+# Add this if not already present
+node_modules/
+.DS_Store
+.env
+*.log
+.vscode/
+.idea/
+dist/
