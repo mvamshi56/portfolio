@@ -21,10 +21,21 @@
     const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
 
     // ===== LOADING SCREEN =====
+    const scrollToHash = () => {
+        const hash = window.location.hash;
+        if (!hash || hash.length < 2) return;
+        const target = document.getElementById(hash.substring(1));
+        if (target) {
+            const navHeight = navbar ? navbar.offsetHeight : 72;
+            window.scrollTo({ top: Math.max(0, target.offsetTop - navHeight - 20), behavior: 'smooth' });
+        }
+    };
+
     const dismissLoading = () => {
         setTimeout(() => {
             if (loadingScreen) loadingScreen.classList.add('hidden');
             initAnimations();
+            scrollToHash();
         }, 2000);
     };
 
