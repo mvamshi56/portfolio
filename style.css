@@ -765,11 +765,9 @@ html.theme-transitioning .progress-ring-fill {
 .result-bar-label { font-size: 0.78rem; font-weight: 600; color: var(--text-primary); display: flex; justify-content: space-between; }
 .result-bar-label span:last-child { color: var(--accent-primary); }
 .result-bar-track { height: 6px; background: var(--bg-hover); border-radius: var(--radius-full); overflow: hidden; }
-.result-bar-fill { height: 100%; border-radius: var(--radius-full); transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); }
-.result-bar-fill.before { background: var(--text-muted); width: 0%; }
-.result-bar-fill.after { background: var(--accent-gradient); width: 0%; }
-.case-card.open .result-bar-fill.before { width: var(--before-pct); }
-.case-card.open .result-bar-fill.after { width: var(--after-pct); }
+.result-bar-fill { height: 100%; border-radius: var(--radius-full); transition: width 1s cubic-bezier(0.16, 1, 0.3, 1); width: 0%; }
+.result-bar-fill.before { background: var(--text-muted); }
+.result-bar-fill.after { background: var(--accent-gradient); }
 
 /* ===== ARTICLES ===== */
 .articles { padding: 100px 0; background: var(--bg-secondary); }

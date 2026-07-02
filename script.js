@@ -505,6 +505,17 @@
                 if (c !== except) c.classList.remove('open');
             });
         };
+        const animateBars = (card) => {
+            card.querySelectorAll('.result-bar-fill').forEach(bar => {
+                const pct = bar.dataset.pct;
+                if (pct) bar.style.width = pct;
+            });
+        };
+        const resetBars = () => {
+            document.querySelectorAll('.result-bar-fill').forEach(bar => {
+                bar.style.width = '0%';
+            });
+        };
         document.querySelectorAll('.case-toggle').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.stopPropagation();
@@ -514,8 +525,10 @@
                 if (!wasOpen) {
                     card.classList.add('open');
                     btn.querySelector('.case-toggle-text').textContent = 'Hide Details';
+                    setTimeout(() => animateBars(card), 100);
                 } else {
                     btn.querySelector('.case-toggle-text').textContent = 'View Details';
+                    resetBars();
                 }
             });
         });
@@ -525,6 +538,7 @@
                     c.classList.remove('open');
                     c.querySelector('.case-toggle-text').textContent = 'View Details';
                 });
+                resetBars();
             }
         });
     };
